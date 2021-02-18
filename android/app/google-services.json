@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "722542331775",
+    "project_id": "testing-9652e",
+    "storage_bucket": "testing-9652e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:722542331775:android:841cb66bd04f3d6266fc4a",
+        "android_client_info": {
+          "package_name": "com.deentek.muntazim"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "722542331775-fs82iv946ivmd00g0mv1te3qum4o5o9q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOyIOtALgQG0gUUXVMPZQ4urc4OVX0ssU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "722542331775-fs82iv946ivmd00g0mv1te3qum4o5o9q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
