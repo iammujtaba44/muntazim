@@ -1,4 +1,5 @@
 import 'package:muntazim/core/plugins.dart';
+import 'package:muntazim/core/services/models/studentModel/StudentModel.dart';
 
 class TranscriptScreen extends StatefulWidget {
   @override
@@ -23,8 +24,10 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
   void initState() {
     var parent = Provider.of<AccountProvider>(context, listen: false);
     super.initState();
-    student = parent.student;
-    DatabaseServices().getReportcard();
+    student = parent.studentName;
+
+    // DatabaseServices().getReportcard().listen((event) {});
+    parent.reportCardStream(subjectId: '53').listen((event) {});
     controller.addListener(() {
       double value = controller.offset / 119;
 
@@ -51,7 +54,7 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
               shrinkWrap: true,
               physics: BouncingScrollPhysics(),
               controller: controller,
-              itemCount: _map.keys.length,
+              itemCount: parent.getStudentSubjects(stdId: parent.studentId),
               itemBuilder: (context, index) {
                 double scale = 1.0;
                 if (topContainer > 0.5) {
@@ -68,8 +71,11 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                     transform: Matrix4.identity()..scale(scale, scale),
                     alignment: Alignment.topCenter,
                     child: getTileCard(_height,
-                        subjectName: _map.keys.elementAt(index),
-                        totalMarks: _map.values.elementAt(index)),
+                        parent: parent,
+                        subjectId: parent.studentSubjects.keys.elementAt(index),
+                        subjectName:
+                            '${parent.studentSubjects.values.elementAt(index)}',
+                        totalMarks: '10'),
                   ),
                 );
               }),
@@ -92,11 +98,11 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
     );
   }
 
-  Widget getTileCard(
-    double _height, {
-    dynamic subjectName,
-    totalMarks,
-  }) {
+  Widget getTileCard(double _height,
+      {dynamic subjectName,
+      dynamic subjectId,
+      dynamic totalMarks,
+      AccountProvider parent}) {
     return Padding(
       padding: EdgeInsets.fromLTRB(25, _height * 0.02, 25, 0),
       child: ExpansionTileCard(
@@ -182,6 +188,7 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
             height: 1.0,
             color: Colors.grey,
           ),
+          // StreamBuilder(builder: null),
           getUpperRow(
             text1: 'Quarter 1',
             text2: 'A',
@@ -334,6 +341,7 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                     setState(() {
                       student = newValue;
                     });
+                    parent.studentIdUpdate(valueAt: newValue);
                   },
                   isExpanded: true,
                   isDense: true,

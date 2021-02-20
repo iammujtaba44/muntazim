@@ -47,76 +47,91 @@ class _HomeScreenState extends State<HomeScreen> {
                       AccountModel data = snapshot.data;
                       print(data.students);
 
-                      return Padding(
-                        padding: EdgeInsets.fromLTRB(25, _height * 0.05, 25, 0),
-                        child: Column(
-                          children:
-                              List.generate(data.students.length, (index) {
-                            return Column(children: [
-                              Padding(
-                                padding: EdgeInsets.only(top: _height * 0.01),
-                                child: ExpansionTileCard(
-                                  //key: stCard,
-                                  animateTrailing: true,
-                                  shadowColor: CustomColors.darkGreenColor,
-                                  duration: Duration(seconds: 1),
-                                  elevation: 2.0,
-                                  elevationCurve: Curves.bounceOut,
-                                  heightFactorCurve: Curves.easeInOut,
-                                  contentPadding: EdgeInsets.all(10.0),
-                                  leading: CircleAvatar(
-                                    radius: 30.0,
-                                    backgroundColor:
-                                        CustomColors.lightGreenColor,
-                                  ),
-                                  title: Helper.text(
-                                      value:
-                                          '${data.students.values.elementAt(index)}',
-                                      fSize: _height * 0.025),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      StreamBuilder<SchoolModel>(
-                                          stream: parent.schoolStream(
-                                              schoolId: parent
-                                                  .students[index].schools.keys
-                                                  .elementAt(0)),
-                                          builder: (_, snapshot1) {
-                                            print(snapshot1.hasData);
-                                            if (!snapshot1.hasData) {
-                                              return Helper.text(
-                                                  value: '... .. ... .',
-                                                  fSize: _height * 0.02);
-                                            }
-                                            return Helper.text(
-                                                value:
-                                                    '${snapshot1.data.schoolName}',
-                                                fSize: _height * 0.02);
-                                          }),
-                                      // Helper.text(
-                                      //     value: 'School Name',
-                                      //     fSize: _height * 0.02),
-                                      Helper.text(
-                                          value: 'Grade', fSize: _height * 0.02)
+                      if (data.students != null) {
+                        return Padding(
+                          padding:
+                              EdgeInsets.fromLTRB(25, _height * 0.05, 25, 0),
+                          child: Column(
+                            children:
+                                List.generate(data.students.length, (index) {
+                              return Column(children: [
+                                Padding(
+                                  padding: EdgeInsets.only(top: _height * 0.01),
+                                  child: ExpansionTileCard(
+                                    //key: stCard,
+                                    animateTrailing: true,
+                                    shadowColor: CustomColors.darkGreenColor,
+                                    duration: Duration(seconds: 1),
+                                    elevation: 2.0,
+                                    elevationCurve: Curves.bounceOut,
+                                    heightFactorCurve: Curves.easeInOut,
+                                    contentPadding: EdgeInsets.all(10.0),
+                                    leading: CircleAvatar(
+                                      radius: 30.0,
+                                      backgroundColor:
+                                          CustomColors.lightGreenColor,
+                                    ),
+                                    title: Helper.text(
+                                        value:
+                                            '${data.students.values.elementAt(index)}',
+                                        fSize: _height * 0.025),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        parent.students.isEmpty
+                                            ? Helper.text(
+                                                value: '... .. ... .',
+                                                fSize: _height * 0.02)
+                                            : StreamBuilder<SchoolModel>(
+                                                stream: parent.schoolStream(
+                                                    schoolId: parent
+                                                        .students[index]
+                                                        .schools
+                                                        .keys
+                                                        .elementAt(0)),
+                                                builder: (_, snapshot1) {
+                                                  if (!snapshot1.hasData) {
+                                                    return Helper.text(
+                                                        value: '... .. ... .',
+                                                        fSize: _height * 0.02);
+                                                  }
+                                                  return Helper.text(
+                                                      value:
+                                                          '${snapshot1.data.schoolName}',
+                                                      fSize: _height * 0.02);
+                                                }),
+                                        // Helper.text(
+                                        //     value: 'School Name',
+                                        //     fSize: _height * 0.02),
+                                        Helper.text(
+                                            value: 'Grade',
+                                            fSize: _height * 0.02)
+                                      ],
+                                    ),
+                                    children: <Widget>[
+                                      Divider(
+                                        thickness: 1.0,
+                                        height: 1.0,
+                                      ),
+                                      TileBottomBar(
+                                          height: _height,
+                                          parent: parent,
+                                          index: index)
                                     ],
                                   ),
-                                  children: <Widget>[
-                                    Divider(
-                                      thickness: 1.0,
-                                      height: 1.0,
-                                    ),
-                                    TileBottomBar(
-                                        height: _height,
-                                        parent: parent,
-                                        index: index)
-                                  ],
                                 ),
-                              ),
-                            ]);
-                          }),
-                        ),
-                      );
+                              ]);
+                            }),
+                          ),
+                        );
+                      } else {
+                        return Padding(
+                          padding:
+                              EdgeInsets.fromLTRB(25, _height * 0.05, 25, 0),
+                          child: Text('checking data'),
+                        );
+                      }
                     }),
                 // Padding(
                 //   padding: EdgeInsets.fromLTRB(25, _height * 0.05, 25, 0),

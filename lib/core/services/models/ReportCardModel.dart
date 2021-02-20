@@ -13,11 +13,12 @@ class ReportCardModel {
   });
 
   List<Duration> duration;
-
+  // List<dynamic> duration;
   factory ReportCardModel.fromJson(Map<String, dynamic> json) =>
       ReportCardModel(
         duration: List<Duration>.from(
             json["duration"].map((x) => Duration.fromJson(x))),
+        // duration: List<dynamic>.from(json["duration"])
       );
 
   Map<String, dynamic> toJson() => {
@@ -38,7 +39,7 @@ class Duration {
 
   factory Duration.fromJson(Map<String, dynamic> json) => Duration(
         grading: Grading.fromJson(json["grading"]),
-        attributes: json["attributes"] == null
+        attributes: json["attributes"].isEmpty
             ? null
             : Attributes.fromJson(json["attributes"]),
         durationTitle: json["duration_title"],

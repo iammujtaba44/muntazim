@@ -25,7 +25,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     var parent = Provider.of<AccountProvider>(context, listen: false);
     super.initState();
 
-    student = parent.student;
+    student = parent.studentName;
 
     evnetsFiller();
   }

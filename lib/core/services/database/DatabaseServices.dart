@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:muntazim/core/plugins.dart';
 import 'package:muntazim/core/services/models/ReportCardModel.dart';
@@ -14,19 +15,41 @@ class DatabaseServices extends ResponseState {
   final CollectionReference schools =
       FirebaseFirestore.instance.collection('Schools');
 
-  void getReportcard() {
-    students
+  Map<String, ReportCardModel> getSchool(DocumentSnapshot qs) {
+    print(qs.data());
+    try {
+      Map<String, ReportCardModel> school =
+          reportCardModelFromJson(jsonEncode(qs.data()));
+      return school;
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Stream<Map<String, ReportCardModel>> getReportcard() {
+    return students
         .doc('398')
         .collection('ReportCard')
         .doc('37_123')
-        .get()
-        .then((value) {
-      // print(value.data());
-      Map<String, ReportCardModel> reportCardModel =
-          reportCardModelFromJson(jsonEncode(value.data()));
-
-      print(reportCardModel);
-    });
+        .snapshots()
+        .where((event) => event.data()['53'] == '53')
+        .map(getSchool);
+    //     .get()
+    //     .then((value) {
+    //   // print(value.data());
+    //   Map<String, ReportCardModel> reportCardModel =
+    //       reportCardModelFromJson(jsonEncode(value.data()));
+    //
+    //   print(reportCardModel.values
+    //       .elementAt(0)
+    //       .duration[1]
+    //       .attributes
+    //       .assignment[0]
+    //       .totalMarks);
+    //   // Duration duration =
+    //   //     Duration.fromJson(reportCardModel.values.elementAt(0).duration[0]);
+    //   // print(duration.attributes);
+    // });
   }
 
   // Stream<SchoolModel> schoolStream({String stId}) {
