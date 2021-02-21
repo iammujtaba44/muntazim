@@ -1,4 +1,5 @@
 import 'package:muntazim/core/plugins.dart';
+import 'package:muntazim/core/services/models/ReportCardModel.dart';
 import 'package:muntazim/core/services/models/studentModel/StudentModel.dart';
 
 class TranscriptScreen extends StatefulWidget {
@@ -44,6 +45,7 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
     final _width = MediaQuery.of(context).size.width;
     var parent = Provider.of<AccountProvider>(context);
     Provider.of<AccountProvider>(context).userStream.listen((event) {});
+    // print(parent.studentId);
 
     return Stack(
       children: [
@@ -188,19 +190,58 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
             height: 1.0,
             color: Colors.grey,
           ),
-          // StreamBuilder(builder: null),
-          getUpperRow(
-            text1: 'Quarter 1',
-            text2: 'A',
-            text3: '92/100',
-            cInd: 1,
-          ),
-          getUpperRow(
-              text1: 'Quarter 2',
-              text2: 'A',
-              text3: '89/100',
-              cInd: 1,
-              bottom: false),
+          StreamBuilder<ReportCardModel>(
+              stream: parent.reportCardStream(subjectId: subjectId),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return getUpperRow(
+                    text1: '.. ..',
+                    text2: '..',
+                    text3: '.. .',
+                    cInd: 1,
+                  );
+                }
+                return Container(
+                  // height: _height * 0.1,
+                  child: SingleChildScrollView(
+                      child: Column(
+                          children: List.generate(snapshot.data.duration.length,
+                              (index) {
+                    if (index < snapshot.data.duration.length - 1) {
+                      return getUpperRow(
+                        text1: '${snapshot.data.duration[index].durationTitle}',
+                        text2: snapshot
+                            .data.duration[index].grading.percentageGrade.grade,
+                        text3:
+                            '${snapshot.data.duration[index].grading.percentageGrade.percentage}%',
+                        cInd: 1,
+                      );
+                    } else {
+                      return getUpperRow(
+                          text1:
+                              '${snapshot.data.duration[index].durationTitle}',
+                          text2:
+                              '${snapshot.data.duration[index].grading.percentageGrade.grade}',
+                          text3:
+                              '${snapshot.data.duration[index].grading.percentageGrade.percentage}%',
+                          cInd: 1,
+                          bottom: false);
+                    }
+                  }))),
+                );
+              }),
+          // getUpperRow(
+          //   text1: 'Quarter 1',
+          //   text2: 'A',
+          //   text3: '92/100',
+          //   cInd: 1,
+          // ),
+          // getUpperRow(
+          //     text1: 'Quarter 2',
+          //     text2: 'A',
+          //     text3: '89/100',
+          //     cInd: 1,
+          //     bottom: false),
         ],
       ),
     );
@@ -338,7 +379,7 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                   iconSize: _height * 0.025,
                   dropdownColor: CustomColors.darkBackgroundColor,
                   onChanged: (String newValue) {
-                    setState(() {
+                    this.setState(() {
                       student = newValue;
                     });
                     parent.studentIdUpdate(valueAt: newValue);

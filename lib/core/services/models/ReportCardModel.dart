@@ -12,12 +12,12 @@ class ReportCardModel {
     this.duration,
   });
 
-  List<Duration> duration;
+  List<DurationSubject> duration;
   // List<dynamic> duration;
   factory ReportCardModel.fromJson(Map<String, dynamic> json) =>
       ReportCardModel(
-        duration: List<Duration>.from(
-            json["duration"].map((x) => Duration.fromJson(x))),
+        duration: List<DurationSubject>.from(
+            json["duration"].map((x) => DurationSubject.fromJson(x))),
         // duration: List<dynamic>.from(json["duration"])
       );
 
@@ -26,8 +26,8 @@ class ReportCardModel {
       };
 }
 
-class Duration {
-  Duration({
+class DurationSubject {
+  DurationSubject({
     this.grading,
     this.attributes,
     this.durationTitle,
@@ -37,7 +37,8 @@ class Duration {
   Attributes attributes;
   dynamic durationTitle;
 
-  factory Duration.fromJson(Map<String, dynamic> json) => Duration(
+  factory DurationSubject.fromJson(Map<String, dynamic> json) =>
+      DurationSubject(
         grading: Grading.fromJson(json["grading"]),
         attributes: json["attributes"].isEmpty
             ? null

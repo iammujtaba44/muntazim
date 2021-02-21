@@ -14,26 +14,33 @@ class DatabaseServices extends ResponseState {
       FirebaseFirestore.instance.collection('Students');
   final CollectionReference schools =
       FirebaseFirestore.instance.collection('Schools');
+  final CollectionReference schoolYears =
+      FirebaseFirestore.instance.collection('SchoolYears');
 
-  Map<String, ReportCardModel> getSchool(DocumentSnapshot qs) {
-    print(qs.data());
-    try {
-      Map<String, ReportCardModel> school =
-          reportCardModelFromJson(jsonEncode(qs.data()));
-      return school;
-    } catch (e) {
-      print(e.toString());
-    }
+  void getSchoolYear() {
+    schoolYears.doc('37').get().then((value) {
+      print(value.data());
+    });
   }
+  // Map<String, ReportCardModel> getSchool(DocumentSnapshot qs) {
+  //   print(qs.data());
+  //   try {
+  //     Map<String, ReportCardModel> school =
+  //         reportCardModelFromJson(jsonEncode(qs.data()));
+  //     return school;
+  //   } catch (e) {
+  //     print(e.toString());
+  //   }
+  // }
 
   Stream<Map<String, ReportCardModel>> getReportcard() {
-    return students
-        .doc('398')
-        .collection('ReportCard')
-        .doc('37_123')
-        .snapshots()
-        .where((event) => event.data()['53'] == '53')
-        .map(getSchool);
+    // return students
+    //     .doc('398')
+    //     .collection('ReportCard')
+    //     .doc('37_123')
+    //     .snapshots()
+    //     .where((event) => event.data()['53'] == '53')
+    //     .map(getSchool);
     //     .get()
     //     .then((value) {
     //   // print(value.data());

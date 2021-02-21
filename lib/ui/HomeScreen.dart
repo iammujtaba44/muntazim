@@ -1,5 +1,7 @@
 import 'package:muntazim/core/plugins.dart';
 import 'package:muntazim/core/services/models/SchoolModel.dart';
+import 'package:muntazim/core/services/models/SchoolYearsModel.dart';
+import 'package:muntazim/core/services/models/studentModel/StudentModel.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -11,7 +13,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // DatabaseServices().getStudents();
+    //DatabaseServices().getSchoolYear();
   }
 
   @override
@@ -79,34 +81,123 @@ class _HomeScreenState extends State<HomeScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        parent.students.isEmpty
-                                            ? Helper.text(
-                                                value: '... .. ... .',
-                                                fSize: _height * 0.02)
-                                            : StreamBuilder<SchoolModel>(
-                                                stream: parent.schoolStream(
-                                                    schoolId: parent
-                                                        .students[index]
-                                                        .schools
-                                                        .keys
-                                                        .elementAt(0)),
-                                                builder: (_, snapshot1) {
-                                                  if (!snapshot1.hasData) {
-                                                    return Helper.text(
-                                                        value: '... .. ... .',
-                                                        fSize: _height * 0.02);
-                                                  }
-                                                  return Helper.text(
-                                                      value:
-                                                          '${snapshot1.data.schoolName}',
-                                                      fSize: _height * 0.02);
-                                                }),
+                                        StreamBuilder<StudentModel>(
+                                            stream: parent.studentStream(
+                                                stId: data.students.keys
+                                                    .elementAt(index)),
+                                            builder: (_, student) {
+                                              if (!student.hasData) {
+                                                return Helper.text(
+                                                    value: '... .. ... .',
+                                                    fSize: _height * 0.02);
+                                              }
+
+                                              return Column(
+                                                  children: List.generate(
+                                                      student.data.schools
+                                                          .length, (sdIndex) {
+                                                return StreamBuilder<
+                                                        SchoolModel>(
+                                                    stream: parent.schoolStream(
+                                                        schoolId: student
+                                                            .data.schools.keys
+                                                            .elementAt(
+                                                                sdIndex)),
+                                                    builder: (_, school) {
+                                                      if (!school.hasData) {
+                                                        return Helper.text(
+                                                            value:
+                                                                '... .. ... .',
+                                                            fSize:
+                                                                _height * 0.02);
+                                                      }
+                                                      return Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Helper.text(
+                                                                value:
+                                                                    '${school.data.schoolName}',
+                                                                fSize: _height *
+                                                                    0.02),
+                                                            Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: List.generate(
+                                                                    student
+                                                                        .data
+                                                                        .schools
+                                                                        .values
+                                                                        .elementAt(
+                                                                            sdIndex)
+                                                                        .schoolYears
+                                                                        .length,
+                                                                    (schoolYearIndex) {
+                                                                  return StreamBuilder<
+                                                                          SchoolYearsModel>(
+                                                                      stream: parent.schoolYearStream(
+                                                                          schoolYearId: student
+                                                                              .data
+                                                                              .schools
+                                                                              .values
+                                                                              .elementAt(
+                                                                                  sdIndex)
+                                                                              .schoolYears
+                                                                              .keys
+                                                                              .elementAt(
+                                                                                  schoolYearIndex)),
+                                                                      builder: (_,
+                                                                          schoolYear) {
+                                                                        if (!schoolYear
+                                                                            .hasData) {
+                                                                          return Helper.text(
+                                                                              value: '... .. ... .',
+                                                                              fSize: _height * 0.017);
+                                                                        }
+                                                                        return Helper.text(
+                                                                            value:
+                                                                                schoolYear.data.schoolYear,
+                                                                            fSize: _height * 0.017);
+                                                                      });
+                                                                }))
+                                                            // Helper.text(
+                                                            //     value: 'Grade',
+                                                            //     fSize: _height *
+                                                            //         0.017)
+                                                          ]);
+                                                    });
+                                              }));
+                                            }),
+                                        // parent.students.isEmpty
+                                        //     ? Helper.text(
+                                        //         value: '... .. ... .',
+                                        //         fSize: _height * 0.02)
+                                        //     : StreamBuilder<SchoolModel>(
+                                        //         stream: parent.schoolStream(
+                                        //             schoolId: parent
+                                        //                 .students[index]
+                                        //                 .schools
+                                        //                 .keys
+                                        //                 .elementAt(0)),
+                                        //         builder: (_, snapshot1) {
+                                        //           if (!snapshot1.hasData) {
+                                        //             return Helper.text(
+                                        //                 value: '... .. ... .',
+                                        //                 fSize: _height * 0.02);
+                                        //           }
+                                        //           return Helper.text(
+                                        //               value:
+                                        //                   '${snapshot1.data.schoolName}',
+                                        //               fSize: _height * 0.02);
+                                        //         }),
                                         // Helper.text(
                                         //     value: 'School Name',
                                         //     fSize: _height * 0.02),
-                                        Helper.text(
-                                            value: 'Grade',
-                                            fSize: _height * 0.02)
+                                        // Helper.text(
+                                        //     value: 'Grade',
+                                        //     fSize: _height * 0.02)
                                       ],
                                     ),
                                     children: <Widget>[

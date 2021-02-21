@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:muntazim/core/plugins.dart';
 import 'package:muntazim/core/services/models/ReportCardModel.dart';
 import 'package:muntazim/core/services/models/SchoolModel.dart';
+import 'package:muntazim/core/services/models/SchoolYearsModel.dart';
 import 'package:muntazim/core/services/models/studentModel/StudentModel.dart';
 
 class AccountProvider with ChangeNotifier {
@@ -15,11 +16,11 @@ class AccountProvider with ChangeNotifier {
   AccountModel getAccount(DocumentSnapshot qs) {
     try {
       this.parents = accountModelFromJson(jsonEncode(qs.data()));
-      this.parents.students.keys.forEach((element) {
-        DatabaseServices().students.doc(element).get().then((value) {
-          students.add(studentModelFromJson(jsonEncode(value.data())));
-        });
-      });
+      // this.parents.students.keys.forEach((element) {
+      //   DatabaseServices().students.doc(element).get().then((value) {
+      //     students.add(studentModelFromJson(jsonEncode(value.data())));
+      //   });
+      // });
       return this.parents;
     } catch (e) {
       print(e.toString());
@@ -36,19 +37,47 @@ class AccountProvider with ChangeNotifier {
     }
   }
 
+  SchoolYearsModel getSchoolYear(DocumentSnapshot qs) {
+    // print(qs.data());
+    try {
+      SchoolYearsModel schoolYear =
+          schoolYearsModelFromJson(jsonEncode(qs.data()));
+      return schoolYear;
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  StudentModel getStudent(DocumentSnapshot qs) {
+    // print(qs.data());
+    if (this.parents.students.length == this.students.length) {
+      this.students.clear();
+    }
+    try {
+      StudentModel student = studentModelFromJson(jsonEncode(qs.data()));
+      students.add(student);
+      return student;
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
   ReportCardModel getReportCard(DocumentSnapshot qs, String subjectId) {
     // print(qs.data()[subjectId]);
     try {
-      // Map<String, ReportCardModel> reportCard =
-      //     reportCardModelFromJson(jsonEncode(qs.data()));
       ReportCardModel r = ReportCardModel.fromJson(qs.data()[subjectId]);
-      // print(r);
-      // //  print(reportCard[subjectId]);
-      // // ReportCardModel r = reportCard[subjectId];
       return r;
     } catch (e) {
       print(e.toString());
     }
+  }
+
+  Stream<StudentModel> studentStream({String stId}) {
+    return DatabaseServices()
+        .students
+        .doc(stId)
+        .snapshots()
+        .map(getStudent); //user.snapshots().map(getuser);
   }
 
   Stream<AccountModel> get userStream {
@@ -65,6 +94,14 @@ class AccountProvider with ChangeNotifier {
         .doc(schoolId)
         .snapshots()
         .map(getSchool); //user.snapshots().map(getuser);
+  }
+
+  Stream<SchoolYearsModel> schoolYearStream({String schoolYearId}) {
+    return DatabaseServices()
+        .schoolYears
+        .doc(schoolYearId)
+        .snapshots()
+        .map(getSchoolYear); //user.snapshots().map(getuser);
   }
 
   Stream<ReportCardModel> reportCardStream({String subjectId}) {
