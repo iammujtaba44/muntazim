@@ -12,7 +12,15 @@ class AccountProvider with ChangeNotifier {
   Map<String, String> studentSubjects = Map();
   String studentName = '';
   String studentId = '';
+  Map<String, School> schools;
+  List schoolList = List();
+  List schoolYearList = List();
+  List programsList = List();
+  var schoolId;
 
+  var sessionId;
+
+  var programId;
   AccountModel getAccount(DocumentSnapshot qs) {
     try {
       this.parents = accountModelFromJson(jsonEncode(qs.data()));
@@ -68,7 +76,8 @@ class AccountProvider with ChangeNotifier {
       ReportCardModel r = ReportCardModel.fromJson(qs.data()[subjectId]);
       return r;
     } catch (e) {
-      print(e.toString());
+      print('+++ ${e.toString()}');
+      return null;
     }
   }
 
@@ -104,12 +113,12 @@ class AccountProvider with ChangeNotifier {
         .map(getSchoolYear); //user.snapshots().map(getuser);
   }
 
-  Stream<ReportCardModel> reportCardStream({String subjectId}) {
+  Stream<ReportCardModel> reportCardStream({String subjectId, String docId}) {
     return DatabaseServices()
         .students
         .doc(this.studentId)
         .collection('ReportCard')
-        .doc('37_123')
+        .doc(docId)
         .snapshots()
         .map((event) => getReportCard(event, subjectId));
     //user.snapshots().map(getuser);
@@ -129,16 +138,30 @@ class AccountProvider with ChangeNotifier {
   void studentUpdate({int valueAt}) {
     this.studentName = this.parents.students.values.elementAt(valueAt);
     this.studentId = this.parents.students.keys.elementAt(valueAt).toString();
-
-    //this.parents.students.values.elementAt(valueAt).split(' ').last;
-    notifyListeners();
-  }
-
-  int getStudentSubjects({String stdId}) {
-    List<StudentModel> temp = List<StudentModel>.from(this
-        .students
-        .where((element) => element.studentId.toString() == studentId));
-    this.studentSubjects = temp[0]
+    this.getSchools();
+    this.getSessions(schoolId: this.schools.keys.elementAt(0));
+    this.getPrograms(
+        schoolId: this.schools.keys.elementAt(0),
+        sessionId:
+            this.schools.values.elementAt(0).schoolYears.keys.elementAt(0));
+    this.getsubjects(
+        schoolId: this.schools.keys.elementAt(0),
+        sessionId:
+            this.schools.values.elementAt(0).schoolYears.keys.elementAt(0),
+        programId: this
+            .schools
+            .values
+            .elementAt(0)
+            .schoolYears
+            .values
+            .elementAt(0)
+            .programs
+            .keys
+            .elementAt(0));
+    this.schoolId = this.schools.keys.elementAt(0);
+    this.sessionId =
+        this.schools.values.elementAt(0).schoolYears.keys.elementAt(0);
+    this.programId = this
         .schools
         .values
         .elementAt(0)
@@ -146,22 +169,72 @@ class AccountProvider with ChangeNotifier {
         .values
         .elementAt(0)
         .programs
-        .values
-        .elementAt(0)
-        .subjects;
+        .keys
+        .elementAt(0);
+    notifyListeners();
+  }
+
+  getSchools({String stId, bool type = false}) async {
+    this.schoolList.clear();
+    this.schoolYearList.clear();
+    this.programsList.clear();
+    this.studentSubjects.clear();
+    List<StudentModel> temp = List<StudentModel>.from(this
+        .students
+        .where((element) => element.studentId.toString() == this.studentId));
+    this.schools = temp[0].schools;
+    this.schools.keys.forEach((element) {
+      DatabaseServices().schools.doc(element).get().then((value) {
+        //   print(value.data());
+        this.schoolList.add(value.data());
+        //if (type)
+        notifyListeners();
+      });
+    });
+    //   notifyListeners();
+  }
+
+  getSessions({String schoolId}) async {
+    this.schoolYearList.clear();
+    this.schools[schoolId].schoolYears.keys.forEach((element) {
+      DatabaseServices().schoolYears.doc(element).get().then((value) {
+        print(value.data());
+        this.schoolYearList.add(value.data());
+        notifyListeners();
+      });
+    });
+
     //notifyListeners();
-    int len = 0;
-    len = this.studentSubjects.length;
-    // this.studentSubjects.schools.forEach((key, value) {
-    //   value.schoolYears.forEach((key, value) {
-    //     value.programs.forEach((key, value) {
-    //       value.subjects.forEach((key, value1) {
-    //         len += value1.length;
-    //       });
-    //     });
-    //   });
-    // });
-    print(len);
-    return len;
+  }
+
+  getPrograms({String schoolId, String sessionId}) async {
+    this.programsList.clear();
+    this
+        .schools[schoolId]
+        .schoolYears[sessionId]
+        .programs
+        .keys
+        .forEach((element) {
+      print('${schoolId}_$element');
+      DatabaseServices()
+          .programs
+          .doc('${schoolId}_$element')
+          .get()
+          .then((value) {
+        print(value.data());
+        this.programsList.add(value.data());
+        notifyListeners();
+      });
+    });
+  }
+
+  getsubjects({String schoolId, String programId, String sessionId}) {
+    this.studentSubjects = this
+        .schools[schoolId]
+        .schoolYears[sessionId]
+        .programs[programId]
+        .subjects;
+
+    notifyListeners();
   }
 }

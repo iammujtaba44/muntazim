@@ -10,25 +10,35 @@ class TranscriptScreen extends StatefulWidget {
 class _TranscriptScreenState extends State<TranscriptScreen> {
   final GlobalKey<ExpansionTileCardState> stCard = new GlobalKey();
 
-  Map<String, String> _map = {
-    'Chemistry': '90',
-    'Biology': '95',
-    'Math': '100',
-    'English': '80',
-    'Sindhi': '80'
-  };
+  // Map<String, String> _map = {
+  //   'Chemistry': '90',
+  //   'Biology': '95',
+  //   'Math': '100',
+  //   'English': '80',
+  //   'Sindhi': '80'
+  // };
   ScrollController controller = ScrollController();
   bool closeTopContainer = false;
   double topContainer = 0;
 
   String student = '';
+
+  var school;
+
+  var sessionId;
+
+  var programId;
   void initState() {
     var parent = Provider.of<AccountProvider>(context, listen: false);
     super.initState();
-    student = parent.studentName;
 
-    // DatabaseServices().getReportcard().listen((event) {});
-    parent.reportCardStream(subjectId: '53').listen((event) {});
+    student = parent.studentName;
+    this.sessionId = parent.sessionId;
+    this.school = parent.schoolId;
+    this.programId = parent.programId;
+    // parent.getSchools();
+
+    // parent.reportCardStream(subjectId: '53').listen((event) {});
     controller.addListener(() {
       double value = controller.offset / 119;
 
@@ -52,35 +62,206 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
         Scaffold(
           appBar: myAppBar(_height, parent: parent),
           backgroundColor: CustomColors.lightBackgroundColor,
-          body: ListView.builder(
-              shrinkWrap: true,
-              physics: BouncingScrollPhysics(),
-              controller: controller,
-              itemCount: parent.getStudentSubjects(stdId: parent.studentId),
-              itemBuilder: (context, index) {
-                double scale = 1.0;
-                if (topContainer > 0.5) {
-                  scale = index + 0.5 - topContainer;
-                  if (scale < 0) {
-                    scale = 0;
-                  } else if (scale > 1) {
-                    scale = 1;
-                  }
-                }
-                return Opacity(
-                  opacity: scale,
-                  child: Transform(
-                    transform: Matrix4.identity()..scale(scale, scale),
-                    alignment: Alignment.topCenter,
-                    child: getTileCard(_height,
-                        parent: parent,
-                        subjectId: parent.studentSubjects.keys.elementAt(index),
-                        subjectName:
-                            '${parent.studentSubjects.values.elementAt(index)}',
-                        totalMarks: '10'),
-                  ),
-                );
-              }),
+          body: ListView(
+            shrinkWrap: true,
+            physics: BouncingScrollPhysics(),
+            children: [
+              Container(
+                margin: EdgeInsets.fromLTRB(25, _height * 0.01, 25, 0),
+                padding: EdgeInsets.only(left: 15, right: 15, top: 5),
+                color: Colors.white,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Expanded(
+                      child: DropdownButtonHideUnderline(
+                        child: ButtonTheme(
+                          alignedDropdown: true,
+                          child: DropdownButton<String>(
+                            value: school,
+                            iconSize: 30,
+                            icon: (null),
+                            style: TextStyle(
+                              color: Colors.black54,
+                              fontSize: 16,
+                            ),
+                            hint: Text('Select School'),
+                            onChanged: (String newValue) {
+                              print(newValue);
+                              setState(() {
+                                school = newValue;
+                                //  _getCitiesList();
+
+                                print(school);
+                              });
+                              parent.getSessions(schoolId: school);
+                            },
+                            items: parent.schoolList?.map((item) {
+                                  return new DropdownMenuItem(
+                                    child: new Text(item['school_name']),
+                                    value: item['school_id'].toString(),
+                                  );
+                                })?.toList() ??
+                                [],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.fromLTRB(25, _height * 0.01, 25, 0),
+                padding: EdgeInsets.only(left: 15, right: 15, top: 5),
+                color: Colors.white,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Expanded(
+                      child: DropdownButtonHideUnderline(
+                        child: ButtonTheme(
+                          alignedDropdown: true,
+                          child: DropdownButton<String>(
+                            value: sessionId,
+                            iconSize: 30,
+                            icon: (null),
+                            style: TextStyle(
+                              color: Colors.black54,
+                              fontSize: 16,
+                            ),
+                            hint: Text('Select Session'),
+                            onChanged: (String newValue) {
+                              setState(() {
+                                sessionId = newValue;
+
+                                print(sessionId);
+                              });
+                              parent.getPrograms(
+                                  schoolId: this.school, sessionId: sessionId);
+                            },
+                            items: parent.schoolYearList?.map((item) {
+                                  return new DropdownMenuItem(
+                                    child: new Text(item['school_year']),
+                                    value: item['school_session_id'].toString(),
+                                  );
+                                })?.toList() ??
+                                [],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Expanded(
+                    //   child: DropdownButtonHideUnderline(
+                    //     child: ButtonTheme(
+                    //       alignedDropdown: true,
+                    //       child: DropdownButton<String>(
+                    //         value: school,
+                    //         iconSize: 30,
+                    //         icon: (null),
+                    //         style: TextStyle(
+                    //           color: Colors.black54,
+                    //           fontSize: 16,
+                    //         ),
+                    //         hint: Text('Select Program'),
+                    //         onChanged: (String newValue) {
+                    //           setState(() {
+                    //             // _myState = newValue;
+                    //             // _getCitiesList();
+                    //             // print(_myState);
+                    //           });
+                    //         },
+                    //         items: statesList?.map((item) {
+                    //               return new DropdownMenuItem(
+                    //                 child: new Text(item['name']),
+                    //                 value: item['id'].toString(),
+                    //               );
+                    //             })?.toList() ??
+                    //             [],
+                    //       ),
+                    //     ),
+                    //   ),
+                    // )
+                  ],
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.fromLTRB(25, _height * 0.01, 25, 0),
+                padding: EdgeInsets.only(left: 15, right: 15, top: 5),
+                color: Colors.white,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Expanded(
+                      child: DropdownButtonHideUnderline(
+                        child: ButtonTheme(
+                          alignedDropdown: true,
+                          child: DropdownButton<String>(
+                            value: programId,
+                            iconSize: 30,
+                            icon: (null),
+                            style: TextStyle(
+                              color: Colors.black54,
+                              fontSize: 16,
+                            ),
+                            hint: Text('Select Session'),
+                            onChanged: (String newValue) {
+                              setState(() {
+                                programId = newValue;
+
+                                print(programId);
+                              });
+                              parent.getsubjects(
+                                  schoolId: this.school,
+                                  sessionId: this.sessionId,
+                                  programId: programId);
+                            },
+                            items: parent.programsList?.map((item) {
+                                  return new DropdownMenuItem(
+                                    child: new Text(item['program_title']),
+                                    value: item['program_id'].toString(),
+                                  );
+                                })?.toList() ??
+                                [],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ListView.builder(
+                  shrinkWrap: true,
+                  physics: BouncingScrollPhysics(),
+                  controller: controller,
+                  itemCount: parent.studentSubjects.length,
+                  itemBuilder: (context, index) {
+                    double scale = 1.0;
+                    if (topContainer > 0.5) {
+                      scale = index + 0.5 - topContainer;
+                      if (scale < 0) {
+                        scale = 0;
+                      } else if (scale > 1) {
+                        scale = 1;
+                      }
+                    }
+                    return Opacity(
+                      opacity: scale,
+                      child: Transform(
+                        transform: Matrix4.identity()..scale(scale, scale),
+                        alignment: Alignment.topCenter,
+                        child: getTileCard(_height,
+                            parent: parent,
+                            subjectId:
+                                parent.studentSubjects.keys.elementAt(index),
+                            subjectName:
+                                '${parent.studentSubjects.values.elementAt(index)}',
+                            totalMarks: '10',
+                            reportCardDocId: '${sessionId}_$programId'),
+                      ),
+                    );
+                  })
+            ],
+          ),
 
           // body: SingleChildScrollView(
           //   physics: BouncingScrollPhysics(),
@@ -104,9 +285,10 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
       {dynamic subjectName,
       dynamic subjectId,
       dynamic totalMarks,
+      dynamic reportCardDocId,
       AccountProvider parent}) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(25, _height * 0.02, 25, 0),
+      padding: EdgeInsets.fromLTRB(25, _height * 0.01, 25, 0),
       child: ExpansionTileCard(
         // key: stCard,
         animateTrailing: true,
@@ -191,16 +373,18 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
             color: Colors.grey,
           ),
           StreamBuilder<ReportCardModel>(
-              stream: parent.reportCardStream(subjectId: subjectId),
+              stream: parent.reportCardStream(
+                  subjectId: subjectId, docId: reportCardDocId),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return getUpperRow(
-                    text1: '.. ..',
-                    text2: '..',
-                    text3: '.. .',
-                    cInd: 1,
-                  );
+                      text1: '.. ..',
+                      text2: '..',
+                      text3: '.. .',
+                      cInd: 1,
+                      bottom: false);
                 }
+
                 return Container(
                   // height: _height * 0.1,
                   child: SingleChildScrollView(
@@ -283,60 +467,6 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
     );
   }
 
-  Widget TileBottomBar() {
-    return ButtonBar(
-      alignment: MainAxisAlignment.spaceAround,
-      buttonHeight: 52.0,
-      buttonMinWidth: 90.0,
-      children: <Widget>[
-        FlatButton(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4.0)),
-            onPressed: () {
-              //  cardB.currentState?.expand();
-            },
-            child:
-                ButtonCol(image: 'assets/attendance.png', text: 'Attendance')),
-        FlatButton(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
-          onPressed: () {
-            // cardB.currentState?.collapse();
-          },
-          child: ButtonCol(image: 'assets/assignment.png', text: 'Assignment'),
-        ),
-        FlatButton(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
-          onPressed: () {
-            // cardB.currentState?.toggleExpansion();
-          },
-          child: ButtonCol(image: 'assets/transcript.png', text: 'Transcript'),
-        ),
-      ],
-    );
-  }
-
-  Widget ButtonCol({String image, String text}) {
-    return Column(
-      children: <Widget>[
-        //Icon(Icons.arrow_downward),
-        Image.asset(
-          image,
-          width: text == 'Attendance' ? 42.0 : 35.0,
-          //  height: 40.0,
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
-        ),
-        Text(
-          text,
-          style: TextStyle(fontSize: 12.0, color: Colors.black54),
-        ),
-      ],
-    );
-  }
-
   Widget myAppBar(double _height, {AccountProvider parent}) {
     return AppBar(
       backgroundColor: Colors.transparent,
@@ -368,7 +498,7 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
             ),
             Container(
               width: _height * 0.1,
-              height: 20,
+              height: _height * 0.1,
               child: DropdownButtonHideUnderline(
                 child: DropdownButton(
                   value: student,
@@ -381,8 +511,12 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                   onChanged: (String newValue) {
                     this.setState(() {
                       student = newValue;
+                      this.sessionId = null;
+                      this.school = null;
+                      this.programId = null;
                     });
                     parent.studentIdUpdate(valueAt: newValue);
+                    parent.getSchools(type: true);
                   },
                   isExpanded: true,
                   isDense: true,
