@@ -35,4 +35,5 @@ export 'package:muntazim/utils/CustomColors.dart';
 export 'package:muntazim/utils/Helper.dart';
 export 'package:popup_menu/popup_menu.dart';
 export 'package:muntazim/core/services/providers/AccountProvider.dart';
+export 'package:muntazim/core/services/providers/UserProvider.dart';
 //export 'package:muntazim/core/services/models/studentModel/StudentModel.dart';

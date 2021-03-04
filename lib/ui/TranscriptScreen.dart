@@ -54,7 +54,7 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
     final _height = MediaQuery.of(context).size.height;
     final _width = MediaQuery.of(context).size.width;
     var parent = Provider.of<AccountProvider>(context);
-    Provider.of<AccountProvider>(context).userStream.listen((event) {});
+    // Provider.of<AccountProvider>(context).userStream.listen((event) {});
     // print(parent.studentId);
 
     return Stack(
@@ -90,10 +90,11 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                               print(newValue);
                               setState(() {
                                 school = newValue;
-                                //  _getCitiesList();
-
+                                this.sessionId = null;
+                                this.programId = null;
                                 print(school);
                               });
+                              // parent.clearSubjectList();
                               parent.getSessions(schoolId: school);
                             },
                             items: parent.schoolList?.map((item) {
@@ -133,9 +134,10 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                             onChanged: (String newValue) {
                               setState(() {
                                 sessionId = newValue;
-
+                                this.programId = null;
                                 print(sessionId);
                               });
+
                               parent.getPrograms(
                                   schoolId: this.school, sessionId: sessionId);
                             },
@@ -150,37 +152,6 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                         ),
                       ),
                     ),
-                    // Expanded(
-                    //   child: DropdownButtonHideUnderline(
-                    //     child: ButtonTheme(
-                    //       alignedDropdown: true,
-                    //       child: DropdownButton<String>(
-                    //         value: school,
-                    //         iconSize: 30,
-                    //         icon: (null),
-                    //         style: TextStyle(
-                    //           color: Colors.black54,
-                    //           fontSize: 16,
-                    //         ),
-                    //         hint: Text('Select Program'),
-                    //         onChanged: (String newValue) {
-                    //           setState(() {
-                    //             // _myState = newValue;
-                    //             // _getCitiesList();
-                    //             // print(_myState);
-                    //           });
-                    //         },
-                    //         items: statesList?.map((item) {
-                    //               return new DropdownMenuItem(
-                    //                 child: new Text(item['name']),
-                    //                 value: item['id'].toString(),
-                    //               );
-                    //             })?.toList() ??
-                    //             [],
-                    //       ),
-                    //     ),
-                    //   ),
-                    // )
                   ],
                 ),
               ),
@@ -533,14 +504,6 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                 ),
               ),
             ),
-            // Text(
-            //     '${parent.parents.students.values.elementAt(0).split(' ').last}',
-            //     style: TextStyle(
-            //         fontWeight: FontWeight.w400, fontSize: _height * 0.02)),
-            // Icon(
-            //   Icons.keyboard_arrow_down_outlined,
-            //   color: Colors.white,
-            // )
           ],
         ),
       ),

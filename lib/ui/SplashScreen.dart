@@ -8,6 +8,7 @@ import 'package:muntazim/ui/LoginScreen.dart';
 import 'package:muntazim/utils/AnimatedPageRoute.dart';
 import 'package:muntazim/utils/CustomColors.dart';
 import 'dart:math' as math;
+import 'package:muntazim/core/plugins.dart';
 
 class SplashScreen extends StatefulWidget {
   static String id = 'splashScreen';
@@ -46,10 +47,21 @@ class SplashScreenState extends State<SplashScreen>
             }
           });
     _animationController.forward();
-    Timer(
-        Duration(seconds: 3),
-        () =>
-            Navigator.push(context, AnimatedPageRoute(widget: LoginScreen())));
+    Timer(Duration(seconds: 3), () {
+      var user = Provider.of<UserProvider>(context, listen: false);
+
+      user.readAs();
+      print(user.parentData.displayAs);
+      if (user.parentData == null)
+        Navigator.push(context, AnimatedPageRoute(widget: LoginScreen()));
+      else
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (_) => BottomBarNavigationPatternExample(
+                      screenIndex: 0,
+                    )));
+    });
   }
 
   void dispose() {

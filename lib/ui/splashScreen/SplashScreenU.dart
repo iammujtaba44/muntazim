@@ -4,6 +4,7 @@ import 'package:muntazim/ui/LoginScreen.dart';
 import 'package:muntazim/ui/SplashScreen.dart';
 import 'package:muntazim/utils/CustomColors.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:muntazim/core/plugins.dart';
 
 class SplashScreenU extends StatefulWidget {
   @override
@@ -12,9 +13,17 @@ class SplashScreenU extends StatefulWidget {
 
 class _SplashScreenUState extends State<SplashScreenU> {
   @override
+  void initState() {
+    Provider.of<UserProvider>(context, listen: false).readAs();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final _height = MediaQuery.of(context).size.height;
     final _width = MediaQuery.of(context).size.width;
+    var user = Provider.of<UserProvider>(context);
+    print(user.parentData);
     return AnimatedSplashScreen(
         duration: 3000,
         animationDuration: Duration(seconds: 1),
@@ -38,7 +47,11 @@ class _SplashScreenUState extends State<SplashScreenU> {
             height: 60,
           ),
         ),
-        nextScreen: LoginScreen(),
+        nextScreen: user.parentData == null
+            ? LoginScreen()
+            : BottomBarNavigationPatternExample(
+                screenIndex: 0,
+              ),
         splashTransition: SplashTransition.fadeTransition,
         pageTransitionType: PageTransitionType.bottomToTop,
         backgroundColor: CustomColors.darkBackgroundColor);

@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "722542331775",
-    "project_id": "testing-9652e",
-    "storage_bucket": "testing-9652e.appspot.com"
+    "project_number": "318369378060",
+    "project_id": "muntazim-live",
+    "storage_bucket": "muntazim-live.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:722542331775:android:841cb66bd04f3d6266fc4a",
+        "mobilesdk_app_id": "1:318369378060:android:2b1fa9351c6c1775922329",
         "android_client_info": {
           "package_name": "com.deentek.muntazim"
         }
       },
       "oauth_client": [
         {
-          "client_id": "722542331775-fs82iv946ivmd00g0mv1te3qum4o5o9q.apps.googleusercontent.com",
+          "client_id": "318369378060-pf47t81ncvh89fb8e1pf3oltnddrj9v1.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDOyIOtALgQG0gUUXVMPZQ4urc4OVX0ssU"
+          "current_key": "AIzaSyCPWDw3E7wko12JQu2qu7Qurh_h0o7zPqk"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "722542331775-fs82iv946ivmd00g0mv1te3qum4o5o9q.apps.googleusercontent.com",
+              "client_id": "318369378060-pf47t81ncvh89fb8e1pf3oltnddrj9v1.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

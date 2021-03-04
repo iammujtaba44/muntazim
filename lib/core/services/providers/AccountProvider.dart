@@ -22,13 +22,11 @@ class AccountProvider with ChangeNotifier {
 
   var programId;
   AccountModel getAccount(DocumentSnapshot qs) {
+    //accountModelFromJson(jsonEncode(qs.data()));
+    // print(qs.data());
     try {
       this.parents = accountModelFromJson(jsonEncode(qs.data()));
-      // this.parents.students.keys.forEach((element) {
-      //   DatabaseServices().students.doc(element).get().then((value) {
-      //     students.add(studentModelFromJson(jsonEncode(value.data())));
-      //   });
-      // });
+
       return this.parents;
     } catch (e) {
       print(e.toString());
@@ -89,10 +87,11 @@ class AccountProvider with ChangeNotifier {
         .map(getStudent); //user.snapshots().map(getuser);
   }
 
-  Stream<AccountModel> get userStream {
+  Stream<AccountModel> userStream({String Id}) {
+    //27_324
     return DatabaseServices()
         .account
-        .doc('27_324')
+        .doc(Id)
         .snapshots()
         .map(getAccount); //user.snapshots().map(getuser);
   }
@@ -127,50 +126,64 @@ class AccountProvider with ChangeNotifier {
   void studentIdUpdate({String valueAt}) {
     List<String> name = valueAt.split(' ');
     name.remove('');
+
     List<StudentModel> temp = List<StudentModel>.from(this.students.where(
         (element) =>
             element.firstName.trim() == name[0] &&
             element.lastName.trim() == name[1]));
-    this.studentId = temp[0].studentId.toString();
+    print('=========${temp}');
+    if (temp.isNotEmpty)
+      this.studentId = temp[0].studentId.toString();
+    else
+      this.studentId = '';
     notifyListeners();
   }
 
   void studentUpdate({int valueAt}) {
+    this.schools = Map();
+    this.schoolList.clear();
+    this.schoolYearList.clear();
+    this.programsList.clear();
+    this.studentSubjects = Map();
     this.studentName = this.parents.students.values.elementAt(valueAt);
     this.studentId = this.parents.students.keys.elementAt(valueAt).toString();
+
+    print('stdId check ${this.studentId}');
     this.getSchools();
-    this.getSessions(schoolId: this.schools.keys.elementAt(0));
-    this.getPrograms(
-        schoolId: this.schools.keys.elementAt(0),
-        sessionId:
-            this.schools.values.elementAt(0).schoolYears.keys.elementAt(0));
-    this.getsubjects(
-        schoolId: this.schools.keys.elementAt(0),
-        sessionId:
-            this.schools.values.elementAt(0).schoolYears.keys.elementAt(0),
-        programId: this
-            .schools
-            .values
-            .elementAt(0)
-            .schoolYears
-            .values
-            .elementAt(0)
-            .programs
-            .keys
-            .elementAt(0));
-    this.schoolId = this.schools.keys.elementAt(0);
-    this.sessionId =
-        this.schools.values.elementAt(0).schoolYears.keys.elementAt(0);
-    this.programId = this
-        .schools
-        .values
-        .elementAt(0)
-        .schoolYears
-        .values
-        .elementAt(0)
-        .programs
-        .keys
-        .elementAt(0);
+    if (this.schools.isNotEmpty) {
+      this.getSessions(schoolId: this.schools.keys.elementAt(0));
+      this.getPrograms(
+          schoolId: this.schools.keys.elementAt(0),
+          sessionId:
+              this.schools.values.elementAt(0).schoolYears.keys.elementAt(0));
+      this.getsubjects(
+          schoolId: this.schools.keys.elementAt(0),
+          sessionId:
+              this.schools.values.elementAt(0).schoolYears.keys.elementAt(0),
+          programId: this
+              .schools
+              .values
+              .elementAt(0)
+              .schoolYears
+              .values
+              .elementAt(0)
+              .programs
+              .keys
+              .elementAt(0));
+      this.schoolId = this.schools.keys.elementAt(0);
+      this.sessionId =
+          this.schools.values.elementAt(0).schoolYears.keys.elementAt(0);
+      this.programId = this
+          .schools
+          .values
+          .elementAt(0)
+          .schoolYears
+          .values
+          .elementAt(0)
+          .programs
+          .keys
+          .elementAt(0);
+    }
     notifyListeners();
   }
 
@@ -178,11 +191,14 @@ class AccountProvider with ChangeNotifier {
     this.schoolList.clear();
     this.schoolYearList.clear();
     this.programsList.clear();
-    this.studentSubjects.clear();
+    this.studentSubjects = Map();
+    if (this.studentId == '') this.schools = Map();
+
     List<StudentModel> temp = List<StudentModel>.from(this
         .students
         .where((element) => element.studentId.toString() == this.studentId));
-    this.schools = temp[0].schools;
+
+    if (temp.isNotEmpty) this.schools = temp[0].schools;
     this.schools.keys.forEach((element) {
       DatabaseServices().schools.doc(element).get().then((value) {
         //   print(value.data());
@@ -196,6 +212,7 @@ class AccountProvider with ChangeNotifier {
 
   getSessions({String schoolId}) async {
     this.schoolYearList.clear();
+    this.studentSubjects = Map();
     this.schools[schoolId].schoolYears.keys.forEach((element) {
       DatabaseServices().schoolYears.doc(element).get().then((value) {
         print(value.data());
@@ -207,7 +224,7 @@ class AccountProvider with ChangeNotifier {
     //notifyListeners();
   }
 
-  getPrograms({String schoolId, String sessionId}) async {
+  getPrograms({String schoolId, String sessionId, String schoolYearId}) async {
     this.programsList.clear();
     this
         .schools[schoolId]
@@ -215,10 +232,10 @@ class AccountProvider with ChangeNotifier {
         .programs
         .keys
         .forEach((element) {
-      print('${schoolId}_$element');
+      print('${sessionId}_$element');
       DatabaseServices()
           .programs
-          .doc('${schoolId}_$element')
+          .doc('${sessionId}_$element')
           .get()
           .then((value) {
         print(value.data());
@@ -229,6 +246,8 @@ class AccountProvider with ChangeNotifier {
   }
 
   getsubjects({String schoolId, String programId, String sessionId}) {
+    print(
+        '----${this.schools[schoolId].schoolYears[sessionId].programs[programId].subjects}');
     this.studentSubjects = this
         .schools[schoolId]
         .schoolYears[sessionId]

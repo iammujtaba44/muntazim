@@ -35,7 +35,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     final _height = MediaQuery.of(context).size.height;
     final _width = MediaQuery.of(context).size.width;
     var parent = Provider.of<AccountProvider>(context);
-    Provider.of<AccountProvider>(context).userStream.listen((event) {});
+    // Provider.of<AccountProvider>(context).userStream.listen((event) {});
 
     return Stack(
       children: [
@@ -353,14 +353,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 ),
               ),
             ),
-            // Text(
-            //     '${parent.parents.students.values.elementAt(0).split(' ').last}',
-            //     style: TextStyle(
-            //         fontWeight: FontWeight.w400, fontSize: _height * 0.02)),
-            // Icon(
-            //   Icons.keyboard_arrow_down_outlined,
-            //   color: Colors.white,
-            // )
           ],
         ),
       ),

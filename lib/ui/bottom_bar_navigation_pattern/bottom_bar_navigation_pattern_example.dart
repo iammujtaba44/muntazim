@@ -83,7 +83,7 @@ class _BottomBarNavigationPatternExampleState
           barStyle: BarStyle(fontSize: 12.0, iconSize: 20.0),
           onBarTap: (index) {
             print(index);
-            if (index > 0) {
+            if (index > 0 && index < 3) {
               parent.studentUpdate(valueAt: 0);
             }
             setState(() {

@@ -30,8 +30,8 @@ class AccountModel {
     this.zipcode,
   });
 
-  String address1;
-  String address2;
+  dynamic address1;
+  dynamic address2;
   String cell;
   String cityName;
   dynamic country;
@@ -41,10 +41,13 @@ class AccountModel {
   String loginId;
   dynamic masjidId;
   dynamic parentId;
-  String phone;
+  dynamic phone;
   Map<String, String> schools;
-  dynamic state;
   Map<String, String> students;
+  // List<dynamic> schools;
+  //   // List<dynamic> students;
+  dynamic state;
+
   String username;
   String zipcode;
 
@@ -66,6 +69,8 @@ class AccountModel {
         state: json["state"],
         students: Map.from(json["students"])
             .map((k, v) => MapEntry<String, String>(k, v)),
+        // schools: List<dynamic>.from(json["schools"]),
+        // students: List<dynamic>.from(json["students"]),
         username: json["username"],
         zipcode: json["zipcode"],
       );

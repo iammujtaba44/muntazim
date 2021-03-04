@@ -24,6 +24,14 @@ class DatabaseServices extends ResponseState {
       print(value.data());
     });
   }
+
+  void test() {
+    account.doc('38_1897').get().then((value) {
+      AccountModel aa = accountModelFromJson(jsonEncode(value.data()));
+
+      print(aa.students);
+    });
+  }
   // Map<String, ReportCardModel> getSchool(DocumentSnapshot qs) {
   //   print(qs.data());
   //   try {

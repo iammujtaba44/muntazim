@@ -13,7 +13,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    //DatabaseServices().getSchoolYear();
+
+    //   DatabaseServices().test();
   }
 
   @override
@@ -22,12 +23,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final _width = MediaQuery.of(context).size.width;
     PopupMenu.context = context;
     var parent = Provider.of<AccountProvider>(context);
+    var user = Provider.of<UserProvider>(context);
 
     // DatabaseServices().schoolStream(stId: '398').listen((event) {});
     return Stack(
       children: [
         Scaffold(
-          appBar: myAppBar(_height, _width),
+          appBar: myAppBar(_height, _width, user: user),
           backgroundColor: CustomColors.lightBackgroundColor,
           body: SingleChildScrollView(
             physics: BouncingScrollPhysics(),
@@ -35,7 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
               //mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 StreamBuilder<AccountModel>(
-                    stream: parent.userStream,
+                    stream: parent.userStream(
+                        Id: '${user.parentData != null ? user.parentData.masjidId : ''}_${user.parentData != null ? user.parentData.parentId : ''}'),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
                         return Padding(
@@ -47,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       }
                       AccountModel data = snapshot.data;
-                      print(data.students);
+                      // print(data.students);
 
                       if (data.students != null) {
                         return Padding(
@@ -56,163 +59,150 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Column(
                             children:
                                 List.generate(data.students.length, (index) {
-                              return Column(children: [
-                                Padding(
-                                  padding: EdgeInsets.only(top: _height * 0.01),
-                                  child: ExpansionTileCard(
-                                    //key: stCard,
-                                    animateTrailing: true,
-                                    shadowColor: CustomColors.darkGreenColor,
-                                    duration: Duration(seconds: 1),
-                                    elevation: 2.0,
-                                    elevationCurve: Curves.bounceOut,
-                                    heightFactorCurve: Curves.easeInOut,
-                                    contentPadding: EdgeInsets.all(10.0),
-                                    leading: CircleAvatar(
-                                      radius: 30.0,
-                                      backgroundColor:
-                                          CustomColors.lightGreenColor,
-                                    ),
-                                    title: Helper.text(
-                                        value:
-                                            '${data.students.values.elementAt(index)}',
-                                        fSize: _height * 0.025),
-                                    subtitle: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        StreamBuilder<StudentModel>(
-                                            stream: parent.studentStream(
-                                                stId: data.students.keys
-                                                    .elementAt(index)),
-                                            builder: (_, student) {
-                                              if (!student.hasData) {
-                                                return Helper.text(
-                                                    value: '... .. ... .',
-                                                    fSize: _height * 0.02);
-                                              }
+                              return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          EdgeInsets.only(top: _height * 0.01),
+                                      child: ExpansionTileCard(
+                                        //key: stCard,
+                                        animateTrailing: true,
+                                        shadowColor:
+                                            CustomColors.darkGreenColor,
+                                        duration: Duration(seconds: 1),
+                                        elevation: 2.0,
+                                        elevationCurve: Curves.bounceOut,
+                                        heightFactorCurve: Curves.easeInOut,
+                                        contentPadding: EdgeInsets.all(10.0),
+                                        leading: CircleAvatar(
+                                          radius: 30.0,
+                                          backgroundColor:
+                                              CustomColors.lightGreenColor,
+                                        ),
+                                        title: Helper.text(
+                                            value:
+                                                '${data.students.values.elementAt(index)}',
+                                            fSize: _height * 0.025),
+                                        subtitle: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            StreamBuilder<StudentModel>(
+                                                stream: parent.studentStream(
+                                                    stId: data.students.keys
+                                                        .elementAt(index)),
+                                                builder: (_, student) {
+                                                  if (!student.hasData) {
+                                                    return Helper.text(
+                                                        value: '... .. ... .',
+                                                        fSize: _height * 0.02);
+                                                  }
 
-                                              return Column(
-                                                  children: List.generate(
-                                                      student.data.schools
-                                                          .length, (sdIndex) {
-                                                return StreamBuilder<
-                                                        SchoolModel>(
-                                                    stream: parent.schoolStream(
-                                                        schoolId: student
-                                                            .data.schools.keys
-                                                            .elementAt(
-                                                                sdIndex)),
-                                                    builder: (_, school) {
-                                                      if (!school.hasData) {
-                                                        return Helper.text(
-                                                            value:
-                                                                '... .. ... .',
-                                                            fSize:
-                                                                _height * 0.02);
-                                                      }
-                                                      return Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Helper.text(
-                                                                value:
-                                                                    '${school.data.schoolName}',
-                                                                fSize: _height *
-                                                                    0.02),
-                                                            Column(
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .start,
-                                                                children: List.generate(
-                                                                    student
-                                                                        .data
-                                                                        .schools
-                                                                        .values
-                                                                        .elementAt(
-                                                                            sdIndex)
-                                                                        .schoolYears
-                                                                        .length,
-                                                                    (schoolYearIndex) {
-                                                                  return StreamBuilder<
-                                                                          SchoolYearsModel>(
-                                                                      stream: parent.schoolYearStream(
-                                                                          schoolYearId: student
-                                                                              .data
-                                                                              .schools
-                                                                              .values
-                                                                              .elementAt(
-                                                                                  sdIndex)
-                                                                              .schoolYears
-                                                                              .keys
-                                                                              .elementAt(
-                                                                                  schoolYearIndex)),
-                                                                      builder: (_,
-                                                                          schoolYear) {
-                                                                        if (!schoolYear
-                                                                            .hasData) {
-                                                                          return Helper.text(
-                                                                              value: '... .. ... .',
-                                                                              fSize: _height * 0.017);
-                                                                        }
-                                                                        return Helper.text(
-                                                                            value:
-                                                                                schoolYear.data.schoolYear,
-                                                                            fSize: _height * 0.017);
-                                                                      });
-                                                                }))
-                                                            // Helper.text(
-                                                            //     value: 'Grade',
-                                                            //     fSize: _height *
-                                                            //         0.017)
-                                                          ]);
-                                                    });
-                                              }));
-                                            }),
-                                        // parent.students.isEmpty
-                                        //     ? Helper.text(
-                                        //         value: '... .. ... .',
-                                        //         fSize: _height * 0.02)
-                                        //     : StreamBuilder<SchoolModel>(
-                                        //         stream: parent.schoolStream(
-                                        //             schoolId: parent
-                                        //                 .students[index]
-                                        //                 .schools
-                                        //                 .keys
-                                        //                 .elementAt(0)),
-                                        //         builder: (_, snapshot1) {
-                                        //           if (!snapshot1.hasData) {
-                                        //             return Helper.text(
-                                        //                 value: '... .. ... .',
-                                        //                 fSize: _height * 0.02);
-                                        //           }
-                                        //           return Helper.text(
-                                        //               value:
-                                        //                   '${snapshot1.data.schoolName}',
-                                        //               fSize: _height * 0.02);
-                                        //         }),
-                                        // Helper.text(
-                                        //     value: 'School Name',
-                                        //     fSize: _height * 0.02),
-                                        // Helper.text(
-                                        //     value: 'Grade',
-                                        //     fSize: _height * 0.02)
-                                      ],
-                                    ),
-                                    children: <Widget>[
-                                      Divider(
-                                        thickness: 1.0,
-                                        height: 1.0,
+                                                  return Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: List.generate(
+                                                          student.data.schools
+                                                              .length,
+                                                          (sdIndex) {
+                                                        return StreamBuilder<
+                                                                SchoolModel>(
+                                                            stream: parent.schoolStream(
+                                                                schoolId: student
+                                                                    .data
+                                                                    .schools
+                                                                    .keys
+                                                                    .elementAt(
+                                                                        sdIndex)),
+                                                            builder:
+                                                                (_, school) {
+                                                              if (!school
+                                                                  .hasData) {
+                                                                return Helper.text(
+                                                                    value:
+                                                                        '... .. ... .',
+                                                                    fSize:
+                                                                        _height *
+                                                                            0.02);
+                                                              }
+                                                              return Column(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    Helper.text(
+                                                                        value:
+                                                                            '${school.data.schoolName}',
+                                                                        fSize: _height *
+                                                                            0.02),
+                                                                    Column(
+                                                                        crossAxisAlignment: CrossAxisAlignment
+                                                                            .start,
+                                                                        children: List.generate(
+                                                                            student.data.schools.values.elementAt(sdIndex).schoolYears.length,
+                                                                            (schoolYearIndex) {
+                                                                          return StreamBuilder<SchoolYearsModel>(
+                                                                              stream: parent.schoolYearStream(schoolYearId: student.data.schools.values.elementAt(sdIndex).schoolYears.keys.elementAt(schoolYearIndex)),
+                                                                              builder: (_, schoolYear) {
+                                                                                if (!schoolYear.hasData) {
+                                                                                  return Helper.text(value: '... .. ... .', fSize: _height * 0.017);
+                                                                                }
+                                                                                return Helper.text(value: schoolYear.data.schoolYear, fSize: _height * 0.017);
+                                                                              });
+                                                                        }))
+                                                                    // Helper.text(
+                                                                    //     value: 'Grade',
+                                                                    //     fSize: _height *
+                                                                    //         0.017)
+                                                                  ]);
+                                                            });
+                                                      }));
+                                                }),
+                                            // parent.students.isEmpty
+                                            //     ? Helper.text(
+                                            //         value: '... .. ... .',
+                                            //         fSize: _height * 0.02)
+                                            //     : StreamBuilder<SchoolModel>(
+                                            //         stream: parent.schoolStream(
+                                            //             schoolId: parent
+                                            //                 .students[index]
+                                            //                 .schools
+                                            //                 .keys
+                                            //                 .elementAt(0)),
+                                            //         builder: (_, snapshot1) {
+                                            //           if (!snapshot1.hasData) {
+                                            //             return Helper.text(
+                                            //                 value: '... .. ... .',
+                                            //                 fSize: _height * 0.02);
+                                            //           }
+                                            //           return Helper.text(
+                                            //               value:
+                                            //                   '${snapshot1.data.schoolName}',
+                                            //               fSize: _height * 0.02);
+                                            //         }),
+                                            // Helper.text(
+                                            //     value: 'School Name',
+                                            //     fSize: _height * 0.02),
+                                            // Helper.text(
+                                            //     value: 'Grade',
+                                            //     fSize: _height * 0.02)
+                                          ],
+                                        ),
+                                        children: <Widget>[
+                                          Divider(
+                                            thickness: 1.0,
+                                            height: 1.0,
+                                          ),
+                                          TileBottomBar(
+                                              height: _height,
+                                              parent: parent,
+                                              index: index)
+                                        ],
                                       ),
-                                      TileBottomBar(
-                                          height: _height,
-                                          parent: parent,
-                                          index: index)
-                                    ],
-                                  ),
-                                ),
-                              ]);
+                                    ),
+                                  ]);
                             }),
                           ),
                         );
@@ -224,39 +214,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       }
                     }),
-                // Padding(
-                //   padding: EdgeInsets.fromLTRB(25, _height * 0.05, 25, 0),
-                //   child: ExpansionTileCard(
-                //     key: stCard,
-                //     animateTrailing: true,
-                //     shadowColor: CustomColors.darkGreenColor,
-                //     duration: Duration(seconds: 1),
-                //     elevation: 2.0,
-                //     elevationCurve: Curves.bounceOut,
-                //     heightFactorCurve: Curves.easeInOut,
-                //     contentPadding: EdgeInsets.all(10.0),
-                //     leading: CircleAvatar(
-                //       radius: 30.0,
-                //       backgroundColor: CustomColors.lightGreenColor,
-                //     ),
-                //     title: Helper.text(
-                //         value: 'Student Name', fSize: _height * 0.025),
-                //     subtitle: Column(
-                //       crossAxisAlignment: CrossAxisAlignment.start,
-                //       children: [
-                //         Helper.text(value: 'School Name', fSize: _height * 0.02),
-                //         Helper.text(value: 'Grade', fSize: _height * 0.02)
-                //       ],
-                //     ),
-                //     children: <Widget>[
-                //       Divider(
-                //         thickness: 1.0,
-                //         height: 1.0,
-                //       ),
-                //       TileBottomBar(height: _height)
-                //     ],
-                //   ),
-                // )
               ],
             ),
           ),
@@ -343,7 +300,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget myAppBar(_height, _width) {
+  Widget myAppBar(_height, _width, {UserProvider user}) {
     return AppBar(
       backgroundColor: Colors.transparent,
       leading: Padding(
@@ -359,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fWeight: FontWeight.w300,
                 fSize: _height * 0.018,
                 fColor: Colors.white),
-            Text('Raheel Zain')
+            Text('${user.parentData == null ? '' : user.parentData.displayAs}')
           ],
         ),
       ),
@@ -438,12 +395,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void onClickMenu(MenuItemProvider item) async {
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
-    // //await prefs.setBool('isLogged',false);
-    // await prefs.remove('email');
-    // await prefs.remove('pass');
-    // Pconst.loginModel = null;
-    // Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+    if (item.menuTitle == 'Sign out') {
+      Auth().signOut(context: context);
+    }
   }
 
   void onDismiss() {}

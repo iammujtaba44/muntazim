@@ -191,31 +191,42 @@ class _LoginScreenState extends State<LoginScreen>
           // _signInWithEmailAndPassword(context);
           Auth auth = Auth();
           if (isLoggingIn) {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => BottomBarNavigationPatternExample(
-                      screenIndex: 0,
-                    )));
-            // ResponseState state = await auth.login(
-            //     username: _emailController.text.trim(),
-            //     password: _passwordController.text.trim());
-            // if (state is ListError) {
-            //   setState(() {
-            //     isLoggingIn = false;
-            //   });
-            //   final error = state.error;
-            //   String message = '${error.message}';
-            //   _scaffoldKey.currentState
-            //       .showSnackBar(Helper.sBar(text: message));
-            // } else if (state is LoadedState) {
-            //   Navigator.pushReplacement(
-            //       context,
-            //       MaterialPageRoute(
-            //           builder: (_) => BottomBarNavigationPatternExample(
-            //                 screenIndex: 0,
-            //               )));
-            // }
+            //Navigator.pushReplacement(
+            //  context,
+            // MaterialPageRoute(
+            //     builder: (_) => BottomBarNavigationPatternExample(
+            //       screenIndex: 0,
+            //     )));
+            ResponseState state = await auth.login(
+                username: _emailController.text.trim(),
+                password: _passwordController.text.trim());
+            if (state is ListError) {
+              setState(() {
+                isLoggingIn = false;
+              });
+              final error = state.error;
+              String message = '${error.message}';
+              _scaffoldKey.currentState
+                  .showSnackBar(Helper.sBar(text: message));
+            } else if (state is LoadedState) {
+              LoginModel data = state.data;
+              ParentData user = ParentData(
+                  parentId: data.data.parentId,
+                  firstName: data.data.firstName,
+                  lastName: data.data.lastName,
+                  accessToken: data.data.accessToken,
+                  displayAs: data.data.displayAs,
+                  masjidId: data.data.masjidId);
+              Provider.of<UserProvider>(context, listen: false)
+                  .writeAs(data: user);
+
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => BottomBarNavigationPatternExample(
+                            screenIndex: 0,
+                          )));
+            }
           }
         }
       },
