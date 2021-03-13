@@ -14,7 +14,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    //   DatabaseServices().test();
+    DatabaseServices().test();
   }
 
   @override

@@ -20,14 +20,33 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   List<DateTime> presentDates = [];
   List<DateTime> absentDates = [];
   String student = '';
+
+  var school;
+
+  var sessionId;
+
+  var programId;
+
+  bool searchEnable = false;
+
+  String subjectId;
+
+  String monthId;
   @override
   void initState() {
     var parent = Provider.of<AccountProvider>(context, listen: false);
     super.initState();
 
     student = parent.studentName;
+    this.sessionId = parent.sessionId;
+    this.school = parent.schoolId;
+    this.programId = parent.programId;
+    this.subjectId = parent.subjectId;
+    this.monthId = parent.monthId;
+    print('%%%%% ${parent.monthId}');
+    // _currentDate = DateTime.parse(parent.monthId);
 
-    evnetsFiller();
+    evnetsFiller(parent: parent);
   }
 
   @override
@@ -43,7 +62,38 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           appBar: myAppBar(_height, parent: parent),
           backgroundColor: CustomColors.lightBackgroundColor,
           body: SingleChildScrollView(
-            child: mywidget(height: _height, width: _width),
+            child: Column(children: [
+              InkWell(
+                splashColor: CustomColors.darkBackgroundColor.withOpacity(0.5),
+                onTap: () {
+                  setState(() {
+                    searchEnable = true;
+                  });
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                  margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
+                  padding:
+                      EdgeInsets.only(left: 15, right: 15, top: 5, bottom: 5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Expanded(
+                        child: Text('Search'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              !searchEnable
+                  ? Center()
+                  : Filter(parent: parent, height: _height),
+              searchEnable
+                  ? Center()
+                  : mywidget(height: _height, width: _width, parent: parent)
+            ]),
           ),
         ),
         Helper.myAlign(text: 'ATTENDANCE', height: _height)
@@ -87,59 +137,377 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         ),
       );
 
-  evnetsFiller() {
-    for (int i = 0; i < len; i++) {
-      a = i + 1;
-      presentDates.add(new DateTime(2020, 12, a));
-    }
-    a = 0;
-    for (int i = 0; i < len; i++) {
-      a = i + 1;
-      absentDates.add(new DateTime(2020, 11, a));
-    }
+  evnetsFiller({AccountProvider parent}) {
+    List<String> aa = this.monthId.split('-');
+    setState(() {
+      _currentDate = DateTime(int.tryParse(aa[1]), int.tryParse(aa[0]), 1);
+    });
+    if (parent.monthData != null) {
+      if (parent.monthData['daily_status'] != null) {
+        Map<String, dynamic> status = parent.monthData['daily_status'];
+        // print(status);
 
-    for (int i = 0; i < len; i++) {
-      _markedDateMap.add(
-        presentDates[i],
-        new Event(
-            date: presentDates[i],
-            title: 'Event 5',
-            dot: Container(
-              margin: EdgeInsets.symmetric(horizontal: 1.0),
-              decoration: BoxDecoration(
-                color: Colors.green,
-                borderRadius: BorderRadius.all(
-                  Radius.circular(1000),
-                ),
-              ),
-              height: 7.0,
-              width: 7.0,
-            )),
-      );
-    }
+        status.forEach((key, value) {
+          if (value == 'present') {
+            presentDates.add(DateTime.parse(key));
+          } else if (value == 'absent') {
+            absentDates.add(DateTime.parse(key));
+          }
+        });
 
-    for (int i = 0; i < len; i++) {
-      _markedDateMap.add(
-        absentDates[i],
-        new Event(
-            date: absentDates[i],
-            title: 'Event 5',
-            dot: Container(
-              margin: EdgeInsets.symmetric(horizontal: 1.0),
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.all(
-                  Radius.circular(1000),
-                ),
-              ),
-              height: 7.0,
-              width: 7.0,
-            )),
-      );
+        for (int i = 0; i < presentDates.length; i++) {
+          _markedDateMap.add(
+            presentDates[i],
+            new Event(
+                date: presentDates[i],
+                title: 'Event 5',
+                dot: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 1.0),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(1000),
+                    ),
+                  ),
+                  height: 7.0,
+                  width: 7.0,
+                )),
+          );
+        }
+
+        for (int i = 0; i < absentDates.length; i++) {
+          _markedDateMap.add(
+            absentDates[i],
+            new Event(
+                date: absentDates[i],
+                title: 'Event 5',
+                dot: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 1.0),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(1000),
+                    ),
+                  ),
+                  height: 7.0,
+                  width: 7.0,
+                )),
+          );
+        }
+      }
     }
+    // for (int i = 0; i < len; i++) {
+    //   a = i + 1;
+    //   presentDates.add(new DateTime(2020, 12, a));
+    // }
+    // a = 0;
+    // for (int i = 0; i < len; i++) {
+    //   a = i + 1;
+    //   absentDates.add(new DateTime(2020, 11, a));
+    // }
   }
 
-  Widget mywidget({double height, double width}) {
+  Widget Filter({AccountProvider parent, double height}) {
+    return Column(children: [
+      Container(
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.all(Radius.circular(5.0))),
+        margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
+        padding: EdgeInsets.only(
+          left: 15,
+          right: 15,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Expanded(
+              child: DropdownButtonHideUnderline(
+                child: ButtonTheme(
+                  alignedDropdown: true,
+                  child: DropdownButton<String>(
+                    value: school,
+                    iconSize: 30,
+                    icon: (null),
+                    style: TextStyle(
+                      color: CustomColors.darkGreenColor,
+                      fontSize: 16,
+                    ),
+                    hint: Text('Select School'),
+                    onChanged: (String newValue) {
+                      print(newValue);
+                      setState(() {
+                        school = newValue;
+                        this.sessionId = null;
+                        this.programId = null;
+                        this.monthId = null;
+                        this.subjectId = null;
+                        print(school);
+                      });
+                      // parent.clearSubjectList();
+                      parent.getSessions(schoolId: school);
+                    },
+                    items: parent.schoolList?.map((item) {
+                          return new DropdownMenuItem(
+                            child: new Text(item['school_name']),
+                            value: item['school_id'].toString(),
+                          );
+                        })?.toList() ??
+                        [],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      Container(
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.all(Radius.circular(5.0))),
+        margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
+        padding: EdgeInsets.only(left: 15, right: 15),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Expanded(
+              child: DropdownButtonHideUnderline(
+                child: ButtonTheme(
+                  alignedDropdown: true,
+                  child: DropdownButton<String>(
+                    value: sessionId,
+                    iconSize: 30,
+                    icon: (null),
+                    style: TextStyle(
+                      color: CustomColors.darkGreenColor,
+                      fontSize: 16,
+                    ),
+                    hint: Text('Select Session'),
+                    onChanged: (String newValue) {
+                      setState(() {
+                        sessionId = newValue;
+                        this.programId = null;
+                        this.monthId = null;
+                        this.subjectId = null;
+                        print(sessionId);
+                      });
+
+                      parent.getPrograms(
+                          schoolId: this.school, sessionId: sessionId);
+                    },
+                    items: parent.schoolYearList?.map((item) {
+                          return new DropdownMenuItem(
+                            child: new Text(
+                              item['school_year'],
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            value: item['school_session_id'].toString(),
+                          );
+                        })?.toList() ??
+                        [],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      Container(
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.all(Radius.circular(5.0))),
+        margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
+        padding: EdgeInsets.only(
+          left: 15,
+          right: 15,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Expanded(
+              child: DropdownButtonHideUnderline(
+                child: ButtonTheme(
+                  alignedDropdown: true,
+                  child: DropdownButton<String>(
+                    value: programId,
+                    iconSize: 30,
+                    icon: (null),
+                    style: TextStyle(
+                      color: CustomColors.darkGreenColor,
+                      fontSize: 16,
+                    ),
+                    hint: Text('Select Program'),
+                    onChanged: (String newValue) {
+                      setState(() {
+                        programId = newValue;
+                        this.monthId = null;
+                        this.subjectId = null;
+                        print(programId);
+                      });
+                      parent.getsubjects(
+                          schoolId1: this.school,
+                          sessionId1: this.sessionId,
+                          programId1: programId);
+                    },
+                    items: parent.programsList?.map((item) {
+                          return new DropdownMenuItem(
+                            child: new Text(item['program_title']),
+                            value: item['program_id'].toString(),
+                          );
+                        })?.toList() ??
+                        [],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      Container(
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.all(Radius.circular(5.0))),
+        margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
+        padding: EdgeInsets.only(
+          left: 15,
+          right: 15,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Expanded(
+              child: DropdownButtonHideUnderline(
+                child: ButtonTheme(
+                  alignedDropdown: true,
+                  child: DropdownButton<String>(
+                    value: subjectId,
+                    iconSize: 30,
+                    icon: (null),
+                    style: TextStyle(
+                      color: CustomColors.darkGreenColor,
+                      fontSize: 16,
+                    ),
+                    hint: Text('Select Subject'),
+                    onChanged: (String newValue) {
+                      setState(() {
+                        subjectId = newValue;
+                        this.monthId = null;
+
+                        print(subjectId);
+                      });
+                      parent.getMonths(
+                          schoolId1: this.school,
+                          sessionId1: this.sessionId,
+                          programId1: this.programId,
+                          subjectId: subjectId);
+                    },
+                    items: parent.studentSubjects.values?.map((item) {
+                          return new DropdownMenuItem(
+                            child: new Text(item),
+                            value: item.toString(),
+                          );
+                        })?.toList() ??
+                        [],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      Container(
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.all(Radius.circular(5.0))),
+        margin: EdgeInsets.only(left: 15.0, right: 15.0, top: 2.0),
+        padding: EdgeInsets.only(
+          left: 15,
+          right: 15,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Expanded(
+              child: DropdownButtonHideUnderline(
+                child: ButtonTheme(
+                  alignedDropdown: true,
+                  child: DropdownButton<String>(
+                    value: monthId,
+                    iconSize: 30,
+                    icon: (null),
+                    style: TextStyle(
+                      color: CustomColors.darkGreenColor,
+                      fontSize: 16,
+                    ),
+                    hint: Text('Select Month'),
+                    onChanged: (String newValue) {
+                      setState(() {
+                        monthId = newValue;
+
+                        print(monthId);
+                      });
+                      parent.getsubjects(
+                          schoolId1: this.school,
+                          sessionId1: this.sessionId,
+                          programId1: programId);
+                    },
+                    items: parent.monthsList?.map((item) {
+                          return new DropdownMenuItem(
+                            child: new Text(item),
+                            value: item.toString(),
+                          );
+                        })?.toList() ??
+                        [],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      InkWell(
+        onTap: () {
+          setState(() {
+            presentDates.clear();
+            absentDates.clear();
+            _markedDateMap.clear();
+          });
+          parent.getMonthData(monthId: this.monthId);
+          this.evnetsFiller(parent: parent);
+          setState(() {
+            searchEnable = false;
+          });
+        },
+        child: Container(
+          decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
+              gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    CustomColors.buttonLightBlueColor,
+                    CustomColors.buttonDarkBlueColor
+                  ])),
+          margin:
+              EdgeInsets.only(left: 15.0, right: 15.0, top: 5.0, bottom: 5.0),
+          padding: EdgeInsets.only(left: 15, right: 15, top: 5.0, bottom: 5.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Expanded(
+                child: Text('SEARCH',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 20, color: Colors.white)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ]);
+  }
+
+  Widget mywidget({double height, double width, AccountProvider parent}) {
     return Column(children: [
       Container(
         //height: height * 0.4,
@@ -219,13 +587,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               child: Column(children: [
                 Row(children: [
                   Text(
-                    'Sessions',
+                    '${this.monthId ?? ''}', //'Sessions',
                     style: TextStyle(fontSize: width * 0.05),
                   ),
-                  Icon(
-                    Icons.keyboard_arrow_down,
-                    size: 17.0,
-                  ),
+                  // Icon(
+                  //   Icons.keyboard_arrow_down,
+                  //   size: 17.0,
+                  // ),
                   Spacer(),
                   Text(
                     'days',
@@ -237,20 +605,27 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 ),
                 getRow(
                     text: 'Present',
-                    days: '45',
+                    days: '${parent.monthData['present_count'] ?? '0'}', //'45',
                     color: Colors.green,
                     height: height,
                     width: width),
                 getRow(
                     text: 'Absent',
-                    days: '45',
+                    days: '${parent.monthData['absent_count'] ?? '0'}', //'45',
                     color: Colors.red,
                     height: height,
                     width: width),
                 getRow(
                     text: 'Tardy',
-                    days: '45',
+                    days: '${parent.monthData['tardy_count'] ?? '0'}', //'45',
                     color: Colors.amber,
+                    height: height,
+                    width: width),
+                getRow(
+                    text: 'Days not marked',
+                    days:
+                        '${parent.monthData['days_not_marked'] ?? '0'}', //'45',
+                    color: Colors.black45,
                     height: height,
                     width: width),
                 SizedBox(
@@ -323,7 +698,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             ),
             Container(
               width: _height * 0.1,
-              height: 20,
+              height: _height * 0.1,
               child: DropdownButtonHideUnderline(
                 child: DropdownButton(
                   value: student,
@@ -334,9 +709,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   iconSize: _height * 0.025,
                   dropdownColor: CustomColors.darkBackgroundColor,
                   onChanged: (String newValue) {
-                    setState(() {
+                    this.setState(() {
                       student = newValue;
+                      this.sessionId = null;
+                      this.school = null;
+                      this.programId = null;
+                      this.subjectId = null;
+                      this.monthId = null;
+                      this.searchEnable = true;
                     });
+                    parent.studentIdUpdate(valueAt: newValue);
+                    parent.getSchools(type: true);
                   },
                   isExpanded: true,
                   isDense: true,

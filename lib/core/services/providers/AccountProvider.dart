@@ -16,11 +16,18 @@ class AccountProvider with ChangeNotifier {
   List schoolList = List();
   List schoolYearList = List();
   List programsList = List();
+  List subjectList = List();
+  Map<String, dynamic> monthFilterdWithSubject = Map();
+  Map<String, dynamic> monthData = Map();
   var schoolId;
 
   var sessionId;
 
   var programId;
+  var subjectId;
+  var monthId;
+
+  List monthsList = List();
   AccountModel getAccount(DocumentSnapshot qs) {
     //accountModelFromJson(jsonEncode(qs.data()));
     // print(qs.data());
@@ -56,9 +63,9 @@ class AccountProvider with ChangeNotifier {
 
   StudentModel getStudent(DocumentSnapshot qs) {
     // print(qs.data());
-    if (this.parents.students.length == this.students.length) {
-      this.students.clear();
-    }
+    // if (this.parents.students.length == this.students.length) {
+    //   this.students.clear();
+    // }
     try {
       StudentModel student = studentModelFromJson(jsonEncode(qs.data()));
       students.add(student);
@@ -136,19 +143,28 @@ class AccountProvider with ChangeNotifier {
       this.studentId = temp[0].studentId.toString();
     else
       this.studentId = '';
+
     notifyListeners();
   }
 
-  void studentUpdate({int valueAt}) {
+  void studentUpdate({int valueAt, bool attendance = false}) {
+    //clear all list here
     this.schools = Map();
     this.schoolList.clear();
     this.schoolYearList.clear();
     this.programsList.clear();
+    this.monthsList.clear();
     this.studentSubjects = Map();
+    this.monthFilterdWithSubject = Map();
+
+    //get selected student id
     this.studentName = this.parents.students.values.elementAt(valueAt);
     this.studentId = this.parents.students.keys.elementAt(valueAt).toString();
+    //
+    // print('stdId check ${this.studentId}');
+    // print(this.students);
 
-    print('stdId check ${this.studentId}');
+    // get all data for transcript and attendance to show already populated
     this.getSchools();
     if (this.schools.isNotEmpty) {
       this.getSessions(schoolId: this.schools.keys.elementAt(0));
@@ -157,10 +173,10 @@ class AccountProvider with ChangeNotifier {
           sessionId:
               this.schools.values.elementAt(0).schoolYears.keys.elementAt(0));
       this.getsubjects(
-          schoolId: this.schools.keys.elementAt(0),
-          sessionId:
+          schoolId1: this.schools.keys.elementAt(0),
+          sessionId1:
               this.schools.values.elementAt(0).schoolYears.keys.elementAt(0),
-          programId: this
+          programId1: this
               .schools
               .values
               .elementAt(0)
@@ -183,6 +199,15 @@ class AccountProvider with ChangeNotifier {
           .programs
           .keys
           .elementAt(0);
+      if (attendance) {
+        this.subjectId = this.studentSubjects.values.elementAt(0);
+        this.getMonths(
+            subjectId: this.subjectId,
+            programId1: this.programId,
+            schoolId1: this.schoolId,
+            sessionId1: this.sessionId);
+      }
+      notifyListeners();
     }
     notifyListeners();
   }
@@ -191,22 +216,26 @@ class AccountProvider with ChangeNotifier {
     this.schoolList.clear();
     this.schoolYearList.clear();
     this.programsList.clear();
+    this.monthsList.clear();
     this.studentSubjects = Map();
     if (this.studentId == '') this.schools = Map();
 
     List<StudentModel> temp = List<StudentModel>.from(this
         .students
         .where((element) => element.studentId.toString() == this.studentId));
-
+    print(temp);
     if (temp.isNotEmpty) this.schools = temp[0].schools;
+
     this.schools.keys.forEach((element) {
       DatabaseServices().schools.doc(element).get().then((value) {
         //   print(value.data());
         this.schoolList.add(value.data());
         //if (type)
+
         notifyListeners();
       });
     });
+
     //   notifyListeners();
   }
 
@@ -245,15 +274,77 @@ class AccountProvider with ChangeNotifier {
     });
   }
 
-  getsubjects({String schoolId, String programId, String sessionId}) {
+  getsubjects({String schoolId1, String programId1, String sessionId1}) {
+    print('$schoolId1    $programId1     $sessionId1');
+    this.subjectList.clear();
     print(
-        '----${this.schools[schoolId].schoolYears[sessionId].programs[programId].subjects}');
+        '----${this.schools[schoolId1].schoolYears[sessionId1].programs[programId1].subjects}');
     this.studentSubjects = this
-        .schools[schoolId]
-        .schoolYears[sessionId]
-        .programs[programId]
-        .subjects;
+                .schools[schoolId1]
+                .schoolYears[sessionId1]
+                .programs[programId1]
+                .subjects ==
+            null
+        ? Map()
+        : this
+            .schools[schoolId1]
+            .schoolYears[sessionId1]
+            .programs[programId1]
+            .subjects;
 
+    // this.subjectList.add(this
+    //     .schools[schoolId1]
+    //     .schoolYears[sessionId1]
+    //     .programs[programId1]
+    //     .subjects);
+    //
+    // print(subjectList);
+
+    notifyListeners();
+  }
+
+  getMonths(
+      {String schoolId1,
+      String programId1,
+      String sessionId1,
+      String subjectId}) {
+    monthsList.clear();
+    String sbId = '';
+    this.studentSubjects.forEach((key, value) {
+      if (value.contains(subjectId)) {
+        sbId = key;
+      }
+    });
+    print('$schoolId1    $programId1     $sessionId1      $sbId');
+    DatabaseServices()
+        .students
+        .doc(studentId)
+        .collection('Attendance')
+        .doc('${sessionId1}_$programId1')
+        .get()
+        .then((value) {
+      Map<String, dynamic> attandance = value.data() == null
+          ? Map()
+          : attendanceModelFromJson(jsonEncode(value.data()));
+
+      if (attandance.isNotEmpty) {
+        this.monthFilterdWithSubject = attandance[sbId];
+        notifyListeners();
+        this.monthId = this.monthFilterdWithSubject.keys.elementAt(0);
+        monthsList.addAll(this.monthFilterdWithSubject.keys);
+        monthsList.sort();
+        getMonthData(monthId: this.monthId);
+
+        // this.monthData = this.monthFilterdWithSubject[monthsList[0]];
+        // print(this.monthData);
+        //  print(value1[monthsList[0]]);
+      }
+      notifyListeners();
+    });
+  }
+
+  getMonthData({String monthId}) {
+    this.monthData = this.monthFilterdWithSubject[monthId];
     notifyListeners();
   }
 }

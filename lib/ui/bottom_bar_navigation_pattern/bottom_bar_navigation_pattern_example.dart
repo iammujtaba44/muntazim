@@ -84,7 +84,8 @@ class _BottomBarNavigationPatternExampleState
           onBarTap: (index) {
             print(index);
             if (index > 0 && index < 3) {
-              parent.studentUpdate(valueAt: 0);
+              parent.studentUpdate(
+                  valueAt: 0, attendance: index == 2 ? true : false);
             }
             setState(() {
               selectedBarIndex = index;

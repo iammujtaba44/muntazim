@@ -10,13 +10,6 @@ class TranscriptScreen extends StatefulWidget {
 class _TranscriptScreenState extends State<TranscriptScreen> {
   final GlobalKey<ExpansionTileCardState> stCard = new GlobalKey();
 
-  // Map<String, String> _map = {
-  //   'Chemistry': '90',
-  //   'Biology': '95',
-  //   'Math': '100',
-  //   'English': '80',
-  //   'Sindhi': '80'
-  // };
   ScrollController controller = ScrollController();
   bool closeTopContainer = false;
   double topContainer = 0;
@@ -36,9 +29,6 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
     this.sessionId = parent.sessionId;
     this.school = parent.schoolId;
     this.programId = parent.programId;
-    // parent.getSchools();
-
-    // parent.reportCardStream(subjectId: '53').listen((event) {});
     controller.addListener(() {
       double value = controller.offset / 119;
 
@@ -82,7 +72,7 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                             iconSize: 30,
                             icon: (null),
                             style: TextStyle(
-                              color: Colors.black54,
+                              color: CustomColors.darkGreenColor,
                               fontSize: 16,
                             ),
                             hint: Text('Select School'),
@@ -127,7 +117,7 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                             iconSize: 30,
                             icon: (null),
                             style: TextStyle(
-                              color: Colors.black54,
+                              color: CustomColors.darkGreenColor,
                               fontSize: 16,
                             ),
                             hint: Text('Select Session'),
@@ -143,7 +133,10 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                             },
                             items: parent.schoolYearList?.map((item) {
                                   return new DropdownMenuItem(
-                                    child: new Text(item['school_year']),
+                                    child: new Text(
+                                      item['school_year'],
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                     value: item['school_session_id'].toString(),
                                   );
                                 })?.toList() ??
@@ -171,10 +164,10 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                             iconSize: 30,
                             icon: (null),
                             style: TextStyle(
-                              color: Colors.black54,
+                              color: CustomColors.darkGreenColor,
                               fontSize: 16,
                             ),
-                            hint: Text('Select Session'),
+                            hint: Text('Select Program'),
                             onChanged: (String newValue) {
                               setState(() {
                                 programId = newValue;
@@ -182,9 +175,9 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                                 print(programId);
                               });
                               parent.getsubjects(
-                                  schoolId: this.school,
-                                  sessionId: this.sessionId,
-                                  programId: programId);
+                                  schoolId1: this.school,
+                                  sessionId1: this.sessionId,
+                                  programId1: programId);
                             },
                             items: parent.programsList?.map((item) {
                                   return new DropdownMenuItem(

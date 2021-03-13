@@ -7,6 +7,9 @@ Map<String, ReportCardModel> reportCardModelFromJson(String str) =>
 String reportCardModelToJson(Map<String, ReportCardModel> data) => json.encode(
     Map.from(data).map((k, v) => MapEntry<String, dynamic>(k, v.toJson())));
 
+Map<String, dynamic> attendanceModelFromJson(String str) =>
+    Map.from(json.decode(str)).map((k, v) => MapEntry<String, dynamic>(k, v));
+
 class ReportCardModel {
   ReportCardModel({
     this.duration,
