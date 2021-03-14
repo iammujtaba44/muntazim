@@ -43,11 +43,25 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     this.school = parent.schoolId;
     this.programId = parent.programId;
     this.subjectId = parent.subjectId;
-    this.monthId = parent.monthId;
-    print('%%%%% ${parent.monthId}');
+   if(mounted)
+     {
+       Future.delayed(Duration(seconds: 2), (){
+         setState(() {
+           this.monthId = parent.monthId;
+         });
+         evnetsFiller(parent: parent);
+         // List<String> aa = this.monthId.split('-');
+         // setState(() {
+         //   _currentDate = DateTime(int.tryParse(aa[1]), int.tryParse(aa[0]), 1);
+         // });
+         // print(_currentDate);
+       });
+       print('%%%%% ${parent.monthId}');
+     }
+
     // _currentDate = DateTime.parse(parent.monthId);
 
-    evnetsFiller(parent: parent);
+
   }
 
   @override
@@ -139,6 +153,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       );
 
   evnetsFiller({AccountProvider parent}) {
+    print('cheeeeeeeeeeeeeee');
     List<String> aa = this.monthId.split('-');
     setState(() {
       _currentDate = DateTime(int.tryParse(aa[1]), int.tryParse(aa[0]), 1);

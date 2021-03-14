@@ -233,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4.0)),
             onPressed: () {
-              parent.studentUpdate(valueAt: index);
+              parent.studentUpdate(valueAt: index,attendance: true);
               Navigator.pushReplacement(
                   context,
                   AnimatedPageRoute(
