@@ -26,6 +26,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   var sessionId;
 
   var programId;
+  var ok1;
 
   bool searchEnable = false;
 
