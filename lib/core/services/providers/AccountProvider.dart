@@ -51,11 +51,14 @@ class AccountProvider with ChangeNotifier {
   }
 
   SchoolYearsModel getSchoolYear(DocumentSnapshot qs) {
-    // print(qs.data());
+    print('*******(Get School year method --> AccountProvider)*******');
+    //  print(qs.data());
     try {
-      SchoolYearsModel schoolYear =
-          schoolYearsModelFromJson(jsonEncode(qs.data()));
-      return schoolYear;
+      if (qs.data() != null) {
+        SchoolYearsModel schoolYear =
+            schoolYearsModelFromJson(jsonEncode(qs.data()));
+        return schoolYear;
+      }
     } catch (e) {
       print(e.toString());
     }
@@ -244,8 +247,10 @@ class AccountProvider with ChangeNotifier {
     this.studentSubjects = Map();
     this.schools[schoolId].schoolYears.keys.forEach((element) {
       DatabaseServices().schoolYears.doc(element).get().then((value) {
-        print(value.data());
-        this.schoolYearList.add(value.data());
+        print("************** ${value.data()}");
+        if (value.data() != null) {
+          this.schoolYearList.add(value.data());
+        }
         notifyListeners();
       });
     });

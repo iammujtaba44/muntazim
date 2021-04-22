@@ -16,7 +16,7 @@ class SchoolYearsModel {
     this.schoolSessionId,
   });
 
-  String isPreviousYear;
+  dynamic isPreviousYear;
   dynamic schoolId;
   String isCurrentYear;
   String schoolYear;
@@ -25,7 +25,7 @@ class SchoolYearsModel {
 
   factory SchoolYearsModel.fromJson(Map<String, dynamic> json) =>
       SchoolYearsModel(
-        isPreviousYear: json["is_previous_year"],
+        isPreviousYear: json["is_previous_year"] ?? "",
         schoolId: json["school_id"],
         isCurrentYear: json["is_current_year"],
         schoolYear: json["school_year"],

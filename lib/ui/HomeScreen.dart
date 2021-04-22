@@ -14,7 +14,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    DatabaseServices().test();
+    //    DatabaseServices().test();
   }
 
   @override
@@ -133,10 +133,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                           .start,
                                                                   children: [
                                                                     Helper.text(
-                                                                        value:
-                                                                            '${school.data.schoolName}',
-                                                                        fSize: _height *
-                                                                            0.02),
+                                                                      value:
+                                                                          '${school.data.schoolName} - School',
+                                                                      fSize: _height *
+                                                                          0.02,
+                                                                      fColor: CustomColors
+                                                                          .darkBackgroundColor,
+                                                                    ),
                                                                     Column(
                                                                         crossAxisAlignment: CrossAxisAlignment
                                                                             .start,
@@ -147,9 +150,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                               stream: parent.schoolYearStream(schoolYearId: student.data.schools.values.elementAt(sdIndex).schoolYears.keys.elementAt(schoolYearIndex)),
                                                                               builder: (_, schoolYear) {
                                                                                 if (!schoolYear.hasData) {
-                                                                                  return Helper.text(value: '... .. ... .', fSize: _height * 0.017);
+                                                                                  return Helper.text(value: 'No Session Available', fSize: _height * 0.017);
                                                                                 }
-                                                                                return Helper.text(value: schoolYear.data.schoolYear, fSize: _height * 0.017);
+                                                                                return Helper.text(value: '${schoolYear.data.schoolYear} - Session', fSize: _height * 0.017, fColor: CustomColors.buttonDarkBlueColor, fWeight: FontWeight.bold);
                                                                               });
                                                                         }))
                                                                     // Helper.text(
@@ -233,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4.0)),
             onPressed: () {
-              parent.studentUpdate(valueAt: index,attendance: true);
+              parent.studentUpdate(valueAt: index, attendance: true);
               Navigator.pushReplacement(
                   context,
                   AnimatedPageRoute(
