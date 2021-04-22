@@ -1,10 +1,6 @@
 import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:muntazim/ui/TranscriptScreen.dart';
-import 'package:muntazim/ui/bottom_bar_navigation_pattern/bottom_bar_navigation_pattern_example.dart';
-import 'package:muntazim/utils/AnimatedPageRoute.dart';
 import 'package:muntazim/utils/CustomColors.dart';
 import 'package:muntazim/utils/Helper.dart';
 import 'package:muntazim/utils/animatedDialogBox.dart';
@@ -56,7 +52,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
             ),
           ),
         ),
-        Helper.myAlign(text: 'Announcements', height: _height),
+        Helper.myHeader(text: 'Announcements', height: _height),
       ],
     );
   }

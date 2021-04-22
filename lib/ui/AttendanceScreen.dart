@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_calendar_carousel/classes/event.dart';
@@ -6,6 +8,7 @@ import 'package:muntazim/utils/Helper.dart';
 import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart'
     show CalendarCarousel, EventList;
 import 'package:muntazim/core/plugins.dart';
+import 'package:muntazim/utils/animatedDialogBox.dart';
 
 class AttendanceScreen extends StatefulWidget {
   @override
@@ -20,6 +23,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   List<DateTime> presentDates = [];
   List<DateTime> absentDates = [];
   String student = '';
+  StreamController _calenderStream = StreamController<bool>.broadcast();
+
 
   var school;
 
@@ -27,47 +32,58 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   var programId;
 
-
   bool searchEnable = false;
 
   String subjectId;
 
   String monthId;
+
   @override
   void initState() {
     var parent = Provider.of<AccountProvider>(context, listen: false);
     super.initState();
+    _calenderStream.add(true);
+   // WidgetsBinding.instance.addPostFrameCallback((_){animatedAlertBox(parent: parent,height: MediaQuery.of(context).size.height);});
 
     student = parent.studentName;
     this.sessionId = parent.sessionId;
     this.school = parent.schoolId;
     this.programId = parent.programId;
     this.subjectId = parent.subjectId;
-   if(mounted)
-     {
-       Future.delayed(Duration(seconds: 2), (){
-         setState(() {
-           this.monthId = parent.monthId;
-         });
-         evnetsFiller(parent: parent);
-         // List<String> aa = this.monthId.split('-');
-         // setState(() {
-         //   _currentDate = DateTime(int.tryParse(aa[1]), int.tryParse(aa[0]), 1);
-         // });
-         // print(_currentDate);
-       });
-       print('%%%%% ${parent.monthId}');
-     }
+    if (mounted) {
+      Future.delayed(Duration(seconds: 2), () {
+        setState(() {
+          this.monthId = parent.monthId;
+        });
+        eventsFiller(parent: parent);
+      });
+    }
+  }
 
-    // _currentDate = DateTime.parse(parent.monthId);
+ String getProgramName(AccountProvider parent)
+  {
 
+  if(parent.programsList != null)
+    {
+      List<dynamic> list = List.from(parent.programsList.where((element) => element['program_id'].toString().contains(programId)));
+      if(list.isNotEmpty)
+        return list[0]['program_title'];
+      else return null;
+    }
+  return null;
 
   }
 
   @override
   Widget build(BuildContext context) {
-    final _height = MediaQuery.of(context).size.height;
-    final _width = MediaQuery.of(context).size.width;
+    final _height = MediaQuery
+        .of(context)
+        .size
+        .height;
+    final _width = MediaQuery
+        .of(context)
+        .size
+        .width;
     var parent = Provider.of<AccountProvider>(context);
     // Provider.of<AccountProvider>(context).userStream.listen((event) {});
 
@@ -77,48 +93,118 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           appBar: myAppBar(_height, parent: parent),
           backgroundColor: CustomColors.lightBackgroundColor,
           body: SingleChildScrollView(
-            child: Column(children: [
-              InkWell(
-                splashColor: CustomColors.darkBackgroundColor.withOpacity(0.5),
-                onTap: () {
-                  setState(() {
-                    searchEnable = true;
-                  });
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.all(Radius.circular(5.0))),
-                  margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
-                  padding:
-                      EdgeInsets.only(left: 15, right: 15, top: 5, bottom: 5),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Text('Search'),
-                      ),
-                    ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+             //  Helper.text(value: 'Grade : ${getProgramName(parent)??''}'),
+
+              Row(
+                children: [
+                  InkWell(
+                    splashColor: CustomColors.darkBackgroundColor.withOpacity(
+                        0.5),
+                    onTap: () {
+                      // this.myDialogBox(height: _height, parent: parent);
+                      this.animatedAlertBox(height: _height, parent: parent);
+
+                      // setState(() {
+                      //   searchEnable = true;
+                      // });
+                    },
+                    child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          //    borderRadius: BorderRadius.all(Radius.circular(1000))
+                        ),
+                        margin: EdgeInsets.only(left: 15,bottom: 2,right: 0),
+                        padding: EdgeInsets.all(14),
+                        child: Icon(Icons.person_search,color: CustomColors.darkGreenColor,)
+                    ),
                   ),
-                ),
+
+                  Expanded(
+                    flex: 3,
+                    child: Container(
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius:
+                        BorderRadius.all(Radius.circular(5.0))),
+                      margin: EdgeInsets.only(left: 15,bottom: 2,right: 15),
+
+                      padding: EdgeInsets.only(
+                      left: 15,
+                      right: 15,
+                    ),
+                    child: Row(
+                      mainAxisAlignment:
+                      MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Expanded(
+                          child: DropdownButtonHideUnderline(
+                            child: ButtonTheme(
+                              alignedDropdown: true,
+                              child: DropdownButton<String>(
+                                value: subjectId,
+                                iconSize: 30,
+                                icon: (null),
+                                style: TextStyle(
+                                  color: CustomColors.darkGreenColor,
+                                  fontSize: 16,
+                                ),
+                                hint: Text('Select Subject'),
+                                onChanged: (String newValue) {
+                                  setState(() {
+                                    subjectId = newValue;
+                                    this.monthId = null;
+
+                                    print(subjectId);
+                                  });
+                                  parent.getMonths(
+                                      schoolId1: this.school,
+                                      sessionId1: this.sessionId,
+                                      programId1: this.programId,
+                                      subjectId: subjectId);
+                                },
+                                items: parent.studentSubjects.values
+                                    ?.map((item) {
+                                  return new DropdownMenuItem(
+                                    child: new Text(item),
+                                    value: item.toString(),
+                                  );
+                                })?.toList() ??
+                                    [],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),)
+                ],
               ),
-              !searchEnable
-                  ? Center()
-                  : Filter(parent: parent, height: _height),
-              searchEnable
-                  ? Center()
-                  : mywidget(height: _height, width: _width, parent: parent)
+
+
+              bodyWidget(height: _height, width: _width, parent: parent)
+              // !searchEnable
+              //     ? Center()
+              //     : Filter(parent: parent, height: _height),
+              // searchEnable
+              //     ? Center()
+              //     : mywidget(height: _height, width: _width, parent: parent)
             ]),
           ),
         ),
-        Helper.myAlign(text: 'ATTENDANCE', height: _height)
+        Helper.myHeader(text: 'ATTENDANCE', height: _height)
       ],
     );
   }
 
   int len = 5;
   int a = 0;
-  static Widget _presentIcon(String day) => Container(
+
+  static Widget _presentIcon(String day) =>
+      Container(
         decoration: BoxDecoration(
           color: Colors.green,
           borderRadius: BorderRadius.all(
@@ -135,7 +221,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         ),
       );
 
-  static Widget _absentIcon(String day) => Container(
+  static Widget _absentIcon(String day) =>
+      Container(
         decoration: BoxDecoration(
           color: Colors.red,
           borderRadius: BorderRadius.all(
@@ -152,12 +239,22 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         ),
       );
 
-  evnetsFiller({AccountProvider parent}) {
-    print('cheeeeeeeeeeeeeee');
+  eventsFiller({AccountProvider parent}) {
+    print("*****(Event filler call method -> Attendance Screen)*****");
+
+    /// Here we populate the all dates of months into calender
+    /// There are two types of loops
+    /// 1 : Present icons which show number of present days/month
+    /// 2 : Absent icon which show number of absent days/ month
+
+    print("*****(Month Id -> ${monthId})");
     List<String> aa = this.monthId.split('-');
     setState(() {
       _currentDate = DateTime(int.tryParse(aa[1]), int.tryParse(aa[0]), 1);
     });
+     _calenderStream.sink.add(true);
+    print(
+        "*****(CurrentDate -> ${_currentDate})");
     if (parent.monthData != null) {
       if (parent.monthData['daily_status'] != null) {
         Map<String, dynamic> status = parent.monthData['daily_status'];
@@ -223,372 +320,335 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     // }
   }
 
-  Widget Filter({AccountProvider parent, double height}) {
+  // myDialogBox({AccountProvider parent, double height}) async {
+  //   await animated_dialog_box.showScaleAlertBox(
+  //       title: Column(children: [
+  //         Helper.text(value: 'SEARCH', fSize: height * 0.03),
+  //         Divider(
+  //           color: Colors.black45,
+  //         )
+  //       ]),
+  //       // IF YOU WANT TO ADD
+  //       context: context,
+  //       yourWidget: Container(
+  //         child: Column(children: [
+  //           Container(
+  //             decoration: BoxDecoration(
+  //                 color: Colors.white,
+  //                 borderRadius: BorderRadius.all(Radius.circular(5.0))),
+  //             margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
+  //             padding: EdgeInsets.only(
+  //               left: 15,
+  //               right: 15,
+  //             ),
+  //             child: Row(
+  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //               children: <Widget>[
+  //                 Expanded(
+  //                   child: DropdownButtonHideUnderline(
+  //                     child: ButtonTheme(
+  //                       alignedDropdown: true,
+  //                       child: DropdownButton<String>(
+  //                         value: school,
+  //                         iconSize: 30,
+  //                         icon: (null),
+  //                         style: TextStyle(
+  //                           color: CustomColors.darkGreenColor,
+  //                           fontSize: 16,
+  //                         ),
+  //                         hint: Text('Select School'),
+  //                         onChanged: (String newValue) {
+  //                           print(newValue);
+  //                           setState(() {
+  //                             school = newValue;
+  //                             this.sessionId = null;
+  //                             this.programId = null;
+  //                             this.monthId = null;
+  //                             this.subjectId = null;
+  //                             print(school);
+  //                           });
+  //                           // parent.clearSubjectList();
+  //                           parent.getSessions(schoolId: school);
+  //                         },
+  //                         items: parent.schoolList?.map((item) {
+  //                               return new DropdownMenuItem(
+  //                                 child: new Text(item['school_name']),
+  //                                 value: item['school_id'].toString(),
+  //                               );
+  //                             })?.toList() ??
+  //                             [],
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //           Container(
+  //             decoration: BoxDecoration(
+  //                 color: Colors.white,
+  //                 borderRadius: BorderRadius.all(Radius.circular(5.0))),
+  //             margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
+  //             padding: EdgeInsets.only(left: 15, right: 15),
+  //             child: Row(
+  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //               children: <Widget>[
+  //                 Expanded(
+  //                   child: DropdownButtonHideUnderline(
+  //                     child: ButtonTheme(
+  //                       alignedDropdown: true,
+  //                       child: DropdownButton<String>(
+  //                         value: sessionId,
+  //                         iconSize: 30,
+  //                         icon: (null),
+  //                         style: TextStyle(
+  //                           color: CustomColors.darkGreenColor,
+  //                           fontSize: 16,
+  //                         ),
+  //                         hint: Text('Select Session'),
+  //                         onChanged: (String newValue) {
+  //                           setState(() {
+  //                             sessionId = newValue;
+  //                             this.programId = null;
+  //                             this.monthId = null;
+  //                             this.subjectId = null;
+  //                             print(sessionId);
+  //                           });
+  //
+  //                           parent.getPrograms(
+  //                               schoolId: this.school, sessionId: sessionId);
+  //                         },
+  //                         items: parent.schoolYearList?.map((item) {
+  //                               return new DropdownMenuItem(
+  //                                 child: new Text(
+  //                                   item['school_year'],
+  //                                   overflow: TextOverflow.ellipsis,
+  //                                 ),
+  //                                 value: item['school_session_id'].toString(),
+  //                               );
+  //                             })?.toList() ??
+  //                             [],
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //           Container(
+  //             decoration: BoxDecoration(
+  //                 color: Colors.white,
+  //                 borderRadius: BorderRadius.all(Radius.circular(5.0))),
+  //             margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
+  //             padding: EdgeInsets.only(
+  //               left: 15,
+  //               right: 15,
+  //             ),
+  //             child: Row(
+  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //               children: <Widget>[
+  //                 Expanded(
+  //                   child: DropdownButtonHideUnderline(
+  //                     child: ButtonTheme(
+  //                       alignedDropdown: true,
+  //                       child: DropdownButton<String>(
+  //                         value: programId,
+  //                         iconSize: 30,
+  //                         icon: (null),
+  //                         style: TextStyle(
+  //                           color: CustomColors.darkGreenColor,
+  //                           fontSize: 16,
+  //                         ),
+  //                         hint: Text('Select Program'),
+  //                         onChanged: (String newValue) {
+  //                           setState(() {
+  //                             programId = newValue;
+  //                             this.monthId = null;
+  //                             this.subjectId = null;
+  //                             print(programId);
+  //                           });
+  //                           parent.getsubjects(
+  //                               schoolId1: this.school,
+  //                               sessionId1: this.sessionId,
+  //                               programId1: programId);
+  //                         },
+  //                         items: parent.programsList?.map((item) {
+  //                               return new DropdownMenuItem(
+  //                                 child: new Text(item['program_title']),
+  //                                 value: item['program_id'].toString(),
+  //                               );
+  //                             })?.toList() ??
+  //                             [],
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //           Container(
+  //             decoration: BoxDecoration(
+  //                 color: Colors.white,
+  //                 borderRadius: BorderRadius.all(Radius.circular(5.0))),
+  //             margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
+  //             padding: EdgeInsets.only(
+  //               left: 15,
+  //               right: 15,
+  //             ),
+  //             child: Row(
+  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //               children: <Widget>[
+  //                 Expanded(
+  //                   child: DropdownButtonHideUnderline(
+  //                     child: ButtonTheme(
+  //                       alignedDropdown: true,
+  //                       child: DropdownButton<String>(
+  //                         value: subjectId,
+  //                         iconSize: 30,
+  //                         icon: (null),
+  //                         style: TextStyle(
+  //                           color: CustomColors.darkGreenColor,
+  //                           fontSize: 16,
+  //                         ),
+  //                         hint: Text('Select Subject'),
+  //                         onChanged: (String newValue) {
+  //                           setState(() {
+  //                             subjectId = newValue;
+  //                             this.monthId = null;
+  //
+  //                             print(subjectId);
+  //                           });
+  //                           parent.getMonths(
+  //                               schoolId1: this.school,
+  //                               sessionId1: this.sessionId,
+  //                               programId1: this.programId,
+  //                               subjectId: subjectId);
+  //                         },
+  //                         items: parent.studentSubjects.values?.map((item) {
+  //                               return new DropdownMenuItem(
+  //                                 child: new Text(item),
+  //                                 value: item.toString(),
+  //                               );
+  //                             })?.toList() ??
+  //                             [],
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //           Container(
+  //             decoration: BoxDecoration(
+  //                 color: Colors.white,
+  //                 borderRadius: BorderRadius.all(Radius.circular(5.0))),
+  //             margin: EdgeInsets.only(left: 15.0, right: 15.0, top: 2.0),
+  //             padding: EdgeInsets.only(
+  //               left: 15,
+  //               right: 15,
+  //             ),
+  //             child: Row(
+  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //               children: <Widget>[
+  //                 Expanded(
+  //                   child: DropdownButtonHideUnderline(
+  //                     child: ButtonTheme(
+  //                       alignedDropdown: true,
+  //                       child: DropdownButton<String>(
+  //                         value: monthId,
+  //                         iconSize: 30,
+  //                         icon: (null),
+  //                         style: TextStyle(
+  //                           color: CustomColors.darkGreenColor,
+  //                           fontSize: 16,
+  //                         ),
+  //                         hint: Text('Select Month'),
+  //                         onChanged: (String newValue) {
+  //                           setState(() {
+  //                             monthId = newValue;
+  //
+  //                             print(monthId);
+  //                           });
+  //                           parent.getsubjects(
+  //                               schoolId1: this.school,
+  //                               sessionId1: this.sessionId,
+  //                               programId1: programId);
+  //                         },
+  //                         items: parent.monthsList?.map((item) {
+  //                               return new DropdownMenuItem(
+  //                                 child: new Text(item),
+  //                                 value: item.toString(),
+  //                               );
+  //                             })?.toList() ??
+  //                             [],
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ]),
+  //       ));
+  // }
+
+  Widget bodyWidget({@required double height,
+    @required double width,
+    @required AccountProvider parent}) {
     return Column(children: [
-      Container(
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.all(Radius.circular(5.0))),
-        margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
-        padding: EdgeInsets.only(
-          left: 15,
-          right: 15,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: DropdownButtonHideUnderline(
-                child: ButtonTheme(
-                  alignedDropdown: true,
-                  child: DropdownButton<String>(
-                    value: school,
-                    iconSize: 30,
-                    icon: (null),
-                    style: TextStyle(
-                      color: CustomColors.darkGreenColor,
-                      fontSize: 16,
-                    ),
-                    hint: Text('Select School'),
-                    onChanged: (String newValue) {
-                      print(newValue);
-                      setState(() {
-                        school = newValue;
-                        this.sessionId = null;
-                        this.programId = null;
-                        this.monthId = null;
-                        this.subjectId = null;
-                        print(school);
-                      });
-                      // parent.clearSubjectList();
-                      parent.getSessions(schoolId: school);
-                    },
-                    items: parent.schoolList?.map((item) {
-                          return new DropdownMenuItem(
-                            child: new Text(item['school_name']),
-                            value: item['school_id'].toString(),
-                          );
-                        })?.toList() ??
-                        [],
-                  ),
+      StreamBuilder(
+          stream: _calenderStream.stream,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Padding(
+                padding: EdgeInsets.only(
+                  top: height * 0.1,
+                 bottom: height * 0.1
+                 // left: width * 0.4,
                 ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      Container(
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.all(Radius.circular(5.0))),
-        margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
-        padding: EdgeInsets.only(left: 15, right: 15),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: DropdownButtonHideUnderline(
-                child: ButtonTheme(
-                  alignedDropdown: true,
-                  child: DropdownButton<String>(
-                    value: sessionId,
-                    iconSize: 30,
-                    icon: (null),
-                    style: TextStyle(
-                      color: CustomColors.darkGreenColor,
-                      fontSize: 16,
-                    ),
-                    hint: Text('Select Session'),
-                    onChanged: (String newValue) {
-                      setState(() {
-                        sessionId = newValue;
-                        this.programId = null;
-                        this.monthId = null;
-                        this.subjectId = null;
-                        print(sessionId);
-                      });
-
-                      parent.getPrograms(
-                          schoolId: this.school, sessionId: sessionId);
-                    },
-                    items: parent.schoolYearList?.map((item) {
-                          return new DropdownMenuItem(
-                            child: new Text(
-                              item['school_year'],
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            value: item['school_session_id'].toString(),
-                          );
-                        })?.toList() ??
-                        [],
+                child: CircularProgressIndicator(),
+              );
+            }
+            else {
+              return Container(
+                //height: height * 0.4,
+                margin: EdgeInsets.symmetric(horizontal: 15.0),
+                padding: EdgeInsets.all(10.0),
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                child: CalendarCarousel<Event>(
+                  scrollDirection: Axis.horizontal,
+                  pageScrollPhysics: BouncingScrollPhysics(),
+                  // onDayPressed: (DateTime date, List<Event> events) {
+                  //   this.setState(() => _currentDate = date);
+                  // },
+                  weekendTextStyle: TextStyle(
+                    color: Colors.black,
                   ),
+                  thisMonthDayBorderColor: Colors.grey,
+                  headerMargin: EdgeInsets.zero,
+                  childAspectRatio: 1.2,
+                  customGridViewPhysics: BouncingScrollPhysics(),
+                  headerTitleTouchable: true,
+                  showOnlyCurrentMonthDate: true,
+                  onHeaderTitlePressed: () {
+                    print('pressed');
+                  },
+                  todayButtonColor: Colors.blue,
+                  todayBorderColor: Colors.blue,
+                  weekFormat: false,
+                  markedDatesMap: _markedDateMap,
+                  markedDateIconMaxShown: 1,
+                  height: height * 0.42,
+                  //420.0,
+                  width: width * 0.9,
+                  selectedDateTime: _currentDate,
+                  daysHaveCircularBorder: false,
                 ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      Container(
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.all(Radius.circular(5.0))),
-        margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
-        padding: EdgeInsets.only(
-          left: 15,
-          right: 15,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: DropdownButtonHideUnderline(
-                child: ButtonTheme(
-                  alignedDropdown: true,
-                  child: DropdownButton<String>(
-                    value: programId,
-                    iconSize: 30,
-                    icon: (null),
-                    style: TextStyle(
-                      color: CustomColors.darkGreenColor,
-                      fontSize: 16,
-                    ),
-                    hint: Text('Select Program'),
-                    onChanged: (String newValue) {
-                      setState(() {
-                        programId = newValue;
-                        this.monthId = null;
-                        this.subjectId = null;
-                        print(programId);
-                      });
-                      parent.getsubjects(
-                          schoolId1: this.school,
-                          sessionId1: this.sessionId,
-                          programId1: programId);
-                    },
-                    items: parent.programsList?.map((item) {
-                          return new DropdownMenuItem(
-                            child: new Text(item['program_title']),
-                            value: item['program_id'].toString(),
-                          );
-                        })?.toList() ??
-                        [],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      Container(
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.all(Radius.circular(5.0))),
-        margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
-        padding: EdgeInsets.only(
-          left: 15,
-          right: 15,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: DropdownButtonHideUnderline(
-                child: ButtonTheme(
-                  alignedDropdown: true,
-                  child: DropdownButton<String>(
-                    value: subjectId,
-                    iconSize: 30,
-                    icon: (null),
-                    style: TextStyle(
-                      color: CustomColors.darkGreenColor,
-                      fontSize: 16,
-                    ),
-                    hint: Text('Select Subject'),
-                    onChanged: (String newValue) {
-                      setState(() {
-                        subjectId = newValue;
-                        this.monthId = null;
-
-                        print(subjectId);
-                      });
-                      parent.getMonths(
-                          schoolId1: this.school,
-                          sessionId1: this.sessionId,
-                          programId1: this.programId,
-                          subjectId: subjectId);
-                    },
-                    items: parent.studentSubjects.values?.map((item) {
-                          return new DropdownMenuItem(
-                            child: new Text(item),
-                            value: item.toString(),
-                          );
-                        })?.toList() ??
-                        [],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      Container(
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.all(Radius.circular(5.0))),
-        margin: EdgeInsets.only(left: 15.0, right: 15.0, top: 2.0),
-        padding: EdgeInsets.only(
-          left: 15,
-          right: 15,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: DropdownButtonHideUnderline(
-                child: ButtonTheme(
-                  alignedDropdown: true,
-                  child: DropdownButton<String>(
-                    value: monthId,
-                    iconSize: 30,
-                    icon: (null),
-                    style: TextStyle(
-                      color: CustomColors.darkGreenColor,
-                      fontSize: 16,
-                    ),
-                    hint: Text('Select Month'),
-                    onChanged: (String newValue) {
-                      setState(() {
-                        monthId = newValue;
-
-                        print(monthId);
-                      });
-                      parent.getsubjects(
-                          schoolId1: this.school,
-                          sessionId1: this.sessionId,
-                          programId1: programId);
-                    },
-                    items: parent.monthsList?.map((item) {
-                          return new DropdownMenuItem(
-                            child: new Text(item),
-                            value: item.toString(),
-                          );
-                        })?.toList() ??
-                        [],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      InkWell(
-        onTap: () {
-          setState(() {
-            presentDates.clear();
-            absentDates.clear();
-            _markedDateMap.clear();
-          });
-          parent.getMonthData(monthId: this.monthId);
-          this.evnetsFiller(parent: parent);
-          setState(() {
-            searchEnable = false;
-          });
-        },
-        child: Container(
-          decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.all(Radius.circular(5.0)),
-              gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [
-                    CustomColors.buttonLightBlueColor,
-                    CustomColors.buttonDarkBlueColor
-                  ])),
-          margin:
-              EdgeInsets.only(left: 15.0, right: 15.0, top: 5.0, bottom: 5.0),
-          padding: EdgeInsets.only(left: 15, right: 15, top: 5.0, bottom: 5.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Expanded(
-                child: Text('SEARCH',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 20, color: Colors.white)),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ]);
-  }
-
-  Widget mywidget({double height, double width, AccountProvider parent}) {
-    return Column(children: [
-      Container(
-        //height: height * 0.4,
-        margin: EdgeInsets.symmetric(horizontal: 15.0),
-        padding: EdgeInsets.all(10.0),
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.all(Radius.circular(5.0))),
-        child: CalendarCarousel<Event>(
-          scrollDirection: Axis.horizontal,
-          pageScrollPhysics: BouncingScrollPhysics(),
-          // onDayPressed: (DateTime date, List<Event> events) {
-          //   this.setState(() => _currentDate = date);
-          // },
-          weekendTextStyle: TextStyle(
-            color: Colors.black,
-          ),
-          thisMonthDayBorderColor: Colors.grey,
-          headerMargin: EdgeInsets.zero,
-          childAspectRatio: 1.2,
-          customGridViewPhysics: BouncingScrollPhysics(),
-          headerTitleTouchable: true,
-          onHeaderTitlePressed: () {
-            print('pressed');
-          },
-          todayButtonColor: Colors.blue,
-          todayBorderColor: Colors.blue,
-
-//      weekDays: null, /// for pass null when you do not want to render weekDays
-//      headerText: Container( /// Example for rendering custom header
-//        child: Text('Custom Header'),
-//      ),
-//         customDayBuilder: (
-//           /// you can provide your own build function to make custom day containers
-//           bool isSelectable,
-//           int index,
-//           bool isSelectedDay,
-//           bool isToday,
-//           bool isPrevMonthDay,
-//           TextStyle textStyle,
-//           bool isNextMonthDay,
-//           bool isThisMonthDay,
-//           DateTime day,
-//         ) {
-//           /// If you return null, [CalendarCarousel] will build container for current [day] with default function.
-//           /// This way you can build custom containers for specific days only, leaving rest as default.
-//
-//           // Example: every 15th of month, we have a flight, we can place an icon in the container like that:
-//           // if (day.day == 15) {
-//           //   return Center(
-//           //     child: Icon(Icons.local_airport),
-//           //   );
-//           // } else {
-//           //   return null;
-//           // }
-//         },
-          weekFormat: false,
-          markedDatesMap: _markedDateMap,
-          markedDateIconMaxShown: 1,
-          height: height * 0.42, //420.0,
-          width: width * 0.9,
-          selectedDateTime: _currentDate,
-          daysHaveCircularBorder: false,
-        ),
-      ),
+              );
+            }
+          }),
       Padding(
         padding: EdgeInsets.symmetric(horizontal: 12.0),
         child: Column(
@@ -621,26 +681,29 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 ),
                 getRow(
                     text: 'Present',
-                    days: '${parent.monthData['present_count'] ?? '0'}', //'45',
+                    days: '${parent.monthData['present_count'] ?? '0'}',
+                    //'45',
                     color: Colors.green,
                     height: height,
                     width: width),
                 getRow(
                     text: 'Absent',
-                    days: '${parent.monthData['absent_count'] ?? '0'}', //'45',
+                    days: '${parent.monthData['absent_count'] ?? '0'}',
+                    //'45',
                     color: Colors.red,
                     height: height,
                     width: width),
                 getRow(
                     text: 'Tardy',
-                    days: '${parent.monthData['tardy_count'] ?? '0'}', //'45',
+                    days: '${parent.monthData['tardy_count'] ?? '0'}',
+                    //'45',
                     color: Colors.amber,
                     height: height,
                     width: width),
                 getRow(
                     text: 'Days not marked',
-                    days:
-                        '${parent.monthData['days_not_marked'] ?? '0'}', //'45',
+                    days: '${parent.monthData['days_not_marked'] ?? '0'}',
+                    //'45',
                     color: Colors.black45,
                     height: height,
                     width: width),
@@ -686,9 +749,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget myAppBar(double _height, {AccountProvider parent}) {
     return AppBar(
       backgroundColor: Colors.transparent,
-      leading: Padding(
-          padding: EdgeInsets.only(left: _height * 0.015, bottom: 50.0),
-          child: Icon(Icons.menu_rounded)),
+      // leading: Padding(
+      //     padding: EdgeInsets.only(left: _height * 0.015, bottom: 50.0),
+      //     child: Icon(Icons.menu_rounded)),
       leadingWidth: _height * 0.03,
       title: Padding(
         padding: EdgeInsets.only(bottom: 50.0),
@@ -713,7 +776,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               width: _height * 0.007,
             ),
             Container(
-              width: _height * 0.1,
+             // width: _height * 0.13,
               height: _height * 0.1,
               child: DropdownButtonHideUnderline(
                 child: DropdownButton(
@@ -732,12 +795,27 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       this.programId = null;
                       this.subjectId = null;
                       this.monthId = null;
-                      this.searchEnable = true;
+                      //    this.searchEnable = true;
                     });
                     parent.studentIdUpdate(valueAt: newValue);
-                    parent.getSchools(type: true);
+                    parent.studentUpdate(attendance: true, isUpdateView: true);
+                    //parent.getSchools(type: true);
+                    //_calenderStream.sink.add(true);
+                      if (mounted) {
+                        Future.delayed(Duration(seconds: 2), () {
+                          setState(() {
+                            this.sessionId = parent.sessionId;
+                            this.school = parent.schoolId;
+                            this.programId = parent.programId;
+                            this.subjectId = parent.subjectId;
+                            this.monthId = parent.monthId;
+                          });
+                          eventsFiller(parent: parent);
+                        });
+                        //  print('%%%%% ${parent.monthId}');
+                      }
                   },
-                  isExpanded: true,
+                 // isExpanded: true,
                   isDense: true,
                   items: parent.parents.students.values
                       .map<DropdownMenuItem<String>>((e) {
@@ -780,7 +858,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   fColor: Colors.white),
               Text('Present',
                   style:
-                      TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+                  TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
               Helper.text(
                   value: '84.50%',
                   fColor: Colors.white,
@@ -792,4 +870,704 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       ],
     );
   }
+
+  animatedAlertBox({AccountProvider parent, double height}) async {
+   return await showGeneralDialog(
+        barrierColor: Colors.black.withOpacity(0.7),
+        transitionBuilder: (context, a1, a2, widget) {
+          return Transform.scale(
+            scale: a1.value,
+            child: Opacity(
+              opacity: a1.value,
+              child: AlertDialog(
+                contentPadding: EdgeInsets.zero,
+
+                shape: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15.0)),
+                title: Column(children: [
+                  Helper.text(value: 'SEARCH', fSize: height * 0.03),
+                  Divider(
+                    color: Colors.black45,
+                  )
+                ]),
+                content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Container(
+                          child: Column(children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius:
+                                  BorderRadius.all(Radius.circular(5.0))),
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 15.0, vertical: 2.0),
+                              padding: EdgeInsets.only(
+                                left: 15,
+                                right: 15,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Expanded(
+                                    child: DropdownButtonHideUnderline(
+                                      child: ButtonTheme(
+                                        alignedDropdown: true,
+                                        child: DropdownButton<String>(
+                                          value: school,
+                                          iconSize: 30,
+                                          icon: (null),
+                                          style: TextStyle(
+                                            color: CustomColors.darkGreenColor,
+                                            fontSize: 16,
+                                          ),
+                                          hint: Text('Select School'),
+                                          onChanged: (String newValue) {
+                                            print(newValue);
+                                            setState(() {
+                                              school = newValue;
+                                              this.sessionId = null;
+                                              this.programId = null;
+                                              this.monthId = null;
+                                              this.subjectId = null;
+                                              //   print(school);
+                                            });
+                                            // parent.clearSubjectList();
+                                            parent.getSessions(
+                                                schoolId: school);
+                                          },
+                                          items: parent.schoolList?.map((item) {
+                                            return new DropdownMenuItem(
+                                              child: new Text(
+                                                  item['school_name']),
+                                              value: item['school_id']
+                                                  .toString(),
+                                            );
+                                          })?.toList() ??
+                                              [],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius:
+                                  BorderRadius.all(Radius.circular(5.0))),
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 15.0, vertical: 2.0),
+                              padding: EdgeInsets.only(left: 15, right: 15),
+                              child: Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Expanded(
+                                    child: DropdownButtonHideUnderline(
+                                      child: ButtonTheme(
+                                        alignedDropdown: true,
+                                        child: DropdownButton<String>(
+                                          value: sessionId,
+                                          iconSize: 30,
+                                          icon: (null),
+                                          style: TextStyle(
+                                            color: CustomColors.darkGreenColor,
+                                            fontSize: 16,
+                                          ),
+                                          hint: Text('Select Session'),
+                                          onChanged: (String newValue) {
+                                            setState(() {
+                                              sessionId = newValue;
+                                              this.programId = null;
+                                              this.monthId = null;
+                                              this.subjectId = null;
+                                              // print(sessionId);
+                                            });
+
+                                            parent.getPrograms(
+                                                schoolId: this.school,
+                                                sessionId: sessionId);
+                                          },
+                                          items: parent.schoolYearList
+                                              ?.map((item) {
+                                            return new DropdownMenuItem(
+                                              child: new Text(
+                                                item['school_year'],
+                                                overflow:
+                                                TextOverflow.ellipsis,
+                                              ),
+                                              value:
+                                              item['school_session_id']
+                                                  .toString(),
+                                            );
+                                          })?.toList() ??
+                                              [],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius:
+                                  BorderRadius.all(Radius.circular(5.0))),
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 15.0, vertical: 2.0),
+                              padding: EdgeInsets.only(
+                                left: 15,
+                                right: 15,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Expanded(
+                                    child: DropdownButtonHideUnderline(
+                                      child: ButtonTheme(
+                                        alignedDropdown: true,
+                                        child: DropdownButton<String>(
+                                          value: programId,
+                                          iconSize: 30,
+                                          icon: (null),
+                                          style: TextStyle(
+                                            color: CustomColors.darkGreenColor,
+                                            fontSize: 16,
+                                          ),
+                                          hint: Text('Select Program'),
+                                          onChanged: (String newValue) {
+                                            setState(() {
+                                              programId = newValue;
+                                              this.monthId = null;
+                                              this.subjectId = null;
+                                              print(programId);
+                                            });
+                                            parent.getsubjects(
+                                                schoolId1: this.school,
+                                                sessionId1: this.sessionId,
+                                                programId1: programId);
+                                          },
+                                          items: parent.programsList
+                                              ?.map((item) {
+                                            return new DropdownMenuItem(
+                                              child: new Text(
+                                                  item['program_title']),
+                                              value: item['program_id']
+                                                  .toString(),
+                                            );
+                                          })?.toList() ??
+                                              [],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius:
+                                  BorderRadius.all(Radius.circular(5.0))),
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 15.0, vertical: 2.0),
+                              padding: EdgeInsets.only(
+                                left: 15,
+                                right: 15,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Expanded(
+                                    child: DropdownButtonHideUnderline(
+                                      child: ButtonTheme(
+                                        alignedDropdown: true,
+                                        child: DropdownButton<String>(
+                                          value: subjectId,
+                                          iconSize: 30,
+                                          icon: (null),
+                                          style: TextStyle(
+                                            color: CustomColors.darkGreenColor,
+                                            fontSize: 16,
+                                          ),
+                                          hint: Text('Select Subject'),
+                                          onChanged: (String newValue) {
+                                            setState(() {
+                                              subjectId = newValue;
+                                              this.monthId = null;
+
+                                              print(subjectId);
+                                            });
+                                            parent.getMonths(
+                                                schoolId1: this.school,
+                                                sessionId1: this.sessionId,
+                                                programId1: this.programId,
+                                                subjectId: subjectId);
+                                          },
+                                          items: parent.studentSubjects.values
+                                              ?.map((item) {
+                                            return new DropdownMenuItem(
+                                              child: new Text(item),
+                                              value: item.toString(),
+                                            );
+                                          })?.toList() ??
+                                              [],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius:
+                                  BorderRadius.all(Radius.circular(5.0))),
+                              margin: EdgeInsets.only(
+                                  left: 15.0, right: 15.0, top: 2.0),
+                              padding: EdgeInsets.only(
+                                left: 15,
+                                right: 15,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Expanded(
+                                    child: DropdownButtonHideUnderline(
+                                      child: ButtonTheme(
+                                        alignedDropdown: true,
+                                        child: DropdownButton<String>(
+                                          value: monthId,
+                                          iconSize: 30,
+                                          icon: (null),
+                                          style: TextStyle(
+                                            color: CustomColors.darkGreenColor,
+                                            fontSize: 16,
+                                          ),
+                                          hint: Text('Select Month'),
+                                          onChanged: (String newValue) {
+                                            setState(() {
+                                              monthId = newValue;
+                                              print(monthId);
+                                            });
+                                            // parent.getsubjects(
+                                            //     schoolId1: this.school,
+                                            //     sessionId1: this.sessionId,
+                                            //     programId1: programId);
+                                          },
+                                          items: parent.monthsList?.map((item) {
+                                            return new DropdownMenuItem(
+                                              child: new Text(item),
+                                              value: item.toString(),
+                                            );
+                                          })?.toList() ??
+                                              [],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ]),
+                        ),
+                        Row(children: [
+                          multiColorExpandedButton(
+                              onTap: () {
+                                Navigator.pop(context);
+                              },
+                              buttonText: "CANCEL",
+                              primaryColor: CustomColors.darkGreenColor,
+                              secondaryColor: CustomColors.lightGreenColor),
+                          multiColorExpandedButton(
+                              onTap: () {
+                                setState(() {
+                                  presentDates.clear();
+                                  absentDates.clear();
+                                  _markedDateMap.clear();
+                                  parent.getMonthData(monthId: this.monthId);
+
+                                  print("*****(Month Id -> ${monthId})");
+                                  List<String> aa = this.monthId.split('-');
+                                  setState(() {
+                                    _currentDate = DateTime(int.tryParse(aa[1]),
+                                        int.tryParse(aa[0]), 1);
+                                  });
+                                  //s   _calenderStream.add(true);
+                                  print(
+                                      "*****(CurrentDate -> ${_currentDate})");
+                                });
+                                eventsFiller(parent: parent);
+                                // _calenderStream.add(true);
+                                Navigator.pop(context);
+                                // setState(() {
+                                //   searchEnable = false;
+                                // });
+                              },
+                              buttonText: "SEARCH",
+                              primaryColor: CustomColors.buttonLightBlueColor,
+                              secondaryColor: CustomColors.buttonDarkBlueColor),
+                        ]),
+                        const SizedBox(
+                          height: 10,
+                        )
+                      ],
+                    );
+                  },
+                ),
+                // actions: <Widget>[
+                //
+                // ],
+              ),
+            ),
+          );
+        },
+        transitionDuration: Duration(milliseconds: 200),
+        barrierDismissible: true,
+        barrierLabel: '',
+        context: context,
+        pageBuilder: (context, animation1, animation2) {});
+  }
+
+  Widget multiColorExpandedButton(
+      {Function onTap, Color primaryColor, Color secondaryColor, buttonText}) {
+    return Expanded(
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [primaryColor, secondaryColor])),
+            margin: EdgeInsets.only(
+                left: 15.0, right: 15.0, top: 5.0, bottom: 5.0),
+            padding: EdgeInsets.only(
+                left: 15, right: 15, top: 5.0, bottom: 5.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Expanded(
+                  child: Text('$buttonText',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 20, color: Colors.white)),
+                ),
+              ],
+            ),
+          ),
+        ));
+  }
 }
+
+//
+// Widget Filter({AccountProvider parent, double height}) {
+//   return Column(children: [
+//     Container(
+//       decoration: BoxDecoration(
+//           color: Colors.white,
+//           borderRadius: BorderRadius.all(Radius.circular(5.0))),
+//       margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
+//       padding: EdgeInsets.only(
+//         left: 15,
+//         right: 15,
+//       ),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: <Widget>[
+//           Expanded(
+//             child: DropdownButtonHideUnderline(
+//               child: ButtonTheme(
+//                 alignedDropdown: true,
+//                 child: DropdownButton<String>(
+//                   value: school,
+//                   iconSize: 30,
+//                   icon: (null),
+//                   style: TextStyle(
+//                     color: CustomColors.darkGreenColor,
+//                     fontSize: 16,
+//                   ),
+//                   hint: Text('Select School'),
+//                   onChanged: (String newValue) {
+//                     print(newValue);
+//                     setState(() {
+//                       school = newValue;
+//                       this.sessionId = null;
+//                       this.programId = null;
+//                       this.monthId = null;
+//                       this.subjectId = null;
+//                       print(school);
+//                     });
+//                     // parent.clearSubjectList();
+//                     parent.getSessions(schoolId: school);
+//                   },
+//                   items: parent.schoolList?.map((item) {
+//                     return new DropdownMenuItem(
+//                       child: new Text(item['school_name']),
+//                       value: item['school_id'].toString(),
+//                     );
+//                   })?.toList() ??
+//                       [],
+//                 ),
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     ),
+//     Container(
+//       decoration: BoxDecoration(
+//           color: Colors.white,
+//           borderRadius: BorderRadius.all(Radius.circular(5.0))),
+//       margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
+//       padding: EdgeInsets.only(left: 15, right: 15),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: <Widget>[
+//           Expanded(
+//             child: DropdownButtonHideUnderline(
+//               child: ButtonTheme(
+//                 alignedDropdown: true,
+//                 child: DropdownButton<String>(
+//                   value: sessionId,
+//                   iconSize: 30,
+//                   icon: (null),
+//                   style: TextStyle(
+//                     color: CustomColors.darkGreenColor,
+//                     fontSize: 16,
+//                   ),
+//                   hint: Text('Select Session'),
+//                   onChanged: (String newValue) {
+//                     setState(() {
+//                       sessionId = newValue;
+//                       this.programId = null;
+//                       this.monthId = null;
+//                       this.subjectId = null;
+//                       print(sessionId);
+//                     });
+//
+//                     parent.getPrograms(
+//                         schoolId: this.school, sessionId: sessionId);
+//                   },
+//                   items: parent.schoolYearList?.map((item) {
+//                     return new DropdownMenuItem(
+//                       child: new Text(
+//                         item['school_year'],
+//                         overflow: TextOverflow.ellipsis,
+//                       ),
+//                       value: item['school_session_id'].toString(),
+//                     );
+//                   })?.toList() ??
+//                       [],
+//                 ),
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     ),
+//     Container(
+//       decoration: BoxDecoration(
+//           color: Colors.white,
+//           borderRadius: BorderRadius.all(Radius.circular(5.0))),
+//       margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
+//       padding: EdgeInsets.only(
+//         left: 15,
+//         right: 15,
+//       ),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: <Widget>[
+//           Expanded(
+//             child: DropdownButtonHideUnderline(
+//               child: ButtonTheme(
+//                 alignedDropdown: true,
+//                 child: DropdownButton<String>(
+//                   value: programId,
+//                   iconSize: 30,
+//                   icon: (null),
+//                   style: TextStyle(
+//                     color: CustomColors.darkGreenColor,
+//                     fontSize: 16,
+//                   ),
+//                   hint: Text('Select Program'),
+//                   onChanged: (String newValue) {
+//                     setState(() {
+//                       programId = newValue;
+//                       this.monthId = null;
+//                       this.subjectId = null;
+//                       print(programId);
+//                     });
+//                     parent.getsubjects(
+//                         schoolId1: this.school,
+//                         sessionId1: this.sessionId,
+//                         programId1: programId);
+//                   },
+//                   items: parent.programsList?.map((item) {
+//                     return new DropdownMenuItem(
+//                       child: new Text(item['program_title']),
+//                       value: item['program_id'].toString(),
+//                     );
+//                   })?.toList() ??
+//                       [],
+//                 ),
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     ),
+//     Container(
+//       decoration: BoxDecoration(
+//           color: Colors.white,
+//           borderRadius: BorderRadius.all(Radius.circular(5.0))),
+//       margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
+//       padding: EdgeInsets.only(
+//         left: 15,
+//         right: 15,
+//       ),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: <Widget>[
+//           Expanded(
+//             child: DropdownButtonHideUnderline(
+//               child: ButtonTheme(
+//                 alignedDropdown: true,
+//                 child: DropdownButton<String>(
+//                   value: subjectId,
+//                   iconSize: 30,
+//                   icon: (null),
+//                   style: TextStyle(
+//                     color: CustomColors.darkGreenColor,
+//                     fontSize: 16,
+//                   ),
+//                   hint: Text('Select Subject'),
+//                   onChanged: (String newValue) {
+//                     setState(() {
+//                       subjectId = newValue;
+//                       this.monthId = null;
+//
+//                       print(subjectId);
+//                     });
+//                     parent.getMonths(
+//                         schoolId1: this.school,
+//                         sessionId1: this.sessionId,
+//                         programId1: this.programId,
+//                         subjectId: subjectId);
+//                   },
+//                   items: parent.studentSubjects.values?.map((item) {
+//                     return new DropdownMenuItem(
+//                       child: new Text(item),
+//                       value: item.toString(),
+//                     );
+//                   })?.toList() ??
+//                       [],
+//                 ),
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     ),
+//     Container(
+//       decoration: BoxDecoration(
+//           color: Colors.white,
+//           borderRadius: BorderRadius.all(Radius.circular(5.0))),
+//       margin: EdgeInsets.only(left: 15.0, right: 15.0, top: 2.0),
+//       padding: EdgeInsets.only(
+//         left: 15,
+//         right: 15,
+//       ),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: <Widget>[
+//           Expanded(
+//             child: DropdownButtonHideUnderline(
+//               child: ButtonTheme(
+//                 alignedDropdown: true,
+//                 child: DropdownButton<String>(
+//                   value: monthId,
+//                   iconSize: 30,
+//                   icon: (null),
+//                   style: TextStyle(
+//                     color: CustomColors.darkGreenColor,
+//                     fontSize: 16,
+//                   ),
+//                   hint: Text('Select Month'),
+//                   onChanged: (String newValue) {
+//                     setState(() {
+//                       monthId = newValue;
+//
+//                       print(monthId);
+//                     });
+//                     parent.getsubjects(
+//                         schoolId1: this.school,
+//                         sessionId1: this.sessionId,
+//                         programId1: programId);
+//                   },
+//                   items: parent.monthsList?.map((item) {
+//                     return new DropdownMenuItem(
+//                       child: new Text(item),
+//                       value: item.toString(),
+//                     );
+//                   })?.toList() ??
+//                       [],
+//                 ),
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     ),
+//     InkWell(
+//       onTap: () {
+//         setState(() {
+//           presentDates.clear();
+//           absentDates.clear();
+//           _markedDateMap.clear();
+//         });
+//         parent.getMonthData(monthId: this.monthId);
+//         this.eventsFiller(parent: parent);
+//         setState(() {
+//           searchEnable = false;
+//         });
+//       },
+//       child: Container(
+//         decoration: BoxDecoration(
+//             color: Colors.white,
+//             borderRadius: BorderRadius.all(Radius.circular(5.0)),
+//             gradient: LinearGradient(
+//                 begin: Alignment.centerLeft,
+//                 end: Alignment.centerRight,
+//                 colors: [
+//                   CustomColors.buttonLightBlueColor,
+//                   CustomColors.buttonDarkBlueColor
+//                 ])),
+//         margin:
+//         EdgeInsets.only(left: 15.0, right: 15.0, top: 5.0, bottom: 5.0),
+//         padding: EdgeInsets.only(left: 15, right: 15, top: 5.0, bottom: 5.0),
+//         child: Row(
+//           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//           children: <Widget>[
+//             Expanded(
+//               child: Text('SEARCH',
+//                   textAlign: TextAlign.center,
+//                   style: TextStyle(fontSize: 20, color: Colors.white)),
+//             ),
+//           ],
+//         ),
+//       ),
+//     ),
+//   ]);
+// }

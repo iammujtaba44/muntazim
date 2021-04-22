@@ -218,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        Helper.myAlign(text: 'HOME', height: _height),
+        Helper.myHeader(text: 'HOME', height: _height),
       ],
     );
   }

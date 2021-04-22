@@ -28,6 +28,7 @@ class AccountProvider with ChangeNotifier {
   var monthId;
 
   List monthsList = List();
+
   AccountModel getAccount(DocumentSnapshot qs) {
     //accountModelFromJson(jsonEncode(qs.data()));
     // print(qs.data());
@@ -54,7 +55,7 @@ class AccountProvider with ChangeNotifier {
     // print(qs.data());
     try {
       SchoolYearsModel schoolYear =
-          schoolYearsModelFromJson(jsonEncode(qs.data()));
+      schoolYearsModelFromJson(jsonEncode(qs.data()));
       return schoolYear;
     } catch (e) {
       print(e.toString());
@@ -135,8 +136,8 @@ class AccountProvider with ChangeNotifier {
     name.remove('');
 
     List<StudentModel> temp = List<StudentModel>.from(this.students.where(
-        (element) =>
-            element.firstName.trim() == name[0] &&
+            (element) =>
+        element.firstName.trim() == name[0] &&
             element.lastName.trim() == name[1]));
     print('=========${temp}');
     if (temp.isNotEmpty)
@@ -147,7 +148,8 @@ class AccountProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void studentUpdate({int valueAt, bool attendance = false}) {
+  void studentUpdate(
+      {int valueAt, bool attendance = false, bool isUpdateView = false}) {
     //clear all list here
     this.schools = Map();
     this.schoolList.clear();
@@ -158,12 +160,10 @@ class AccountProvider with ChangeNotifier {
     this.monthFilterdWithSubject = Map();
 
     //get selected student id
-    this.studentName = this.parents.students.values.elementAt(valueAt);
-    this.studentId = this.parents.students.keys.elementAt(valueAt).toString();
-    //
-    // print('stdId check ${this.studentId}');
-    // print(this.students);
-
+    if (!isUpdateView) {
+      this.studentName = this.parents.students.values.elementAt(valueAt);
+      this.studentId = this.parents.students.keys.elementAt(valueAt).toString();
+    }
     // get all data for transcript and attendance to show already populated
     this.getSchools();
     if (this.schools.isNotEmpty) {
@@ -171,11 +171,19 @@ class AccountProvider with ChangeNotifier {
       this.getPrograms(
           schoolId: this.schools.keys.elementAt(0),
           sessionId:
-              this.schools.values.elementAt(0).schoolYears.keys.elementAt(0));
+          this.schools.values
+              .elementAt(0)
+              .schoolYears
+              .keys
+              .elementAt(0));
       this.getsubjects(
           schoolId1: this.schools.keys.elementAt(0),
           sessionId1:
-              this.schools.values.elementAt(0).schoolYears.keys.elementAt(0),
+          this.schools.values
+              .elementAt(0)
+              .schoolYears
+              .keys
+              .elementAt(0),
           programId1: this
               .schools
               .values
@@ -188,7 +196,11 @@ class AccountProvider with ChangeNotifier {
               .elementAt(0));
       this.schoolId = this.schools.keys.elementAt(0);
       this.sessionId =
-          this.schools.values.elementAt(0).schoolYears.keys.elementAt(0);
+          this.schools.values
+              .elementAt(0)
+              .schoolYears
+              .keys
+              .elementAt(0);
       this.programId = this
           .schools
           .values
@@ -245,7 +257,9 @@ class AccountProvider with ChangeNotifier {
     this.schools[schoolId].schoolYears.keys.forEach((element) {
       DatabaseServices().schoolYears.doc(element).get().then((value) {
         print(value.data());
-        this.schoolYearList.add(value.data());
+        if (value.data() != null) {
+          this.schoolYearList.add(value.data());
+        }
         notifyListeners();
       });
     });
@@ -267,8 +281,11 @@ class AccountProvider with ChangeNotifier {
           .doc('${sessionId}_$element')
           .get()
           .then((value) {
+        print("*****(GET PROGRAMS --> Data)****");
         print(value.data());
-        this.programsList.add(value.data());
+        if(value.data() != null)
+          this.programsList.add(value.data());
+
         notifyListeners();
       });
     });
@@ -278,19 +295,20 @@ class AccountProvider with ChangeNotifier {
     print('$schoolId1    $programId1     $sessionId1');
     this.subjectList.clear();
     print(
-        '----${this.schools[schoolId1].schoolYears[sessionId1].programs[programId1].subjects}');
+        '----${this.schools[schoolId1].schoolYears[sessionId1]
+            .programs[programId1].subjects}');
     this.studentSubjects = this
-                .schools[schoolId1]
-                .schoolYears[sessionId1]
-                .programs[programId1]
-                .subjects ==
-            null
+        .schools[schoolId1]
+        .schoolYears[sessionId1]
+        .programs[programId1]
+        .subjects ==
+        null
         ? Map()
         : this
-            .schools[schoolId1]
-            .schoolYears[sessionId1]
-            .programs[programId1]
-            .subjects;
+        .schools[schoolId1]
+        .schoolYears[sessionId1]
+        .programs[programId1]
+        .subjects;
 
     // this.subjectList.add(this
     //     .schools[schoolId1]
@@ -303,11 +321,10 @@ class AccountProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  getMonths(
-      {String schoolId1,
-      String programId1,
-      String sessionId1,
-      String subjectId}) {
+  getMonths({String schoolId1,
+    String programId1,
+    String sessionId1,
+    String subjectId}) {
     monthsList.clear();
     String sbId = '';
     this.studentSubjects.forEach((key, value) {

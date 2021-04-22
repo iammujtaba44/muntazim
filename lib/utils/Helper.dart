@@ -37,7 +37,7 @@ class Helper {
         backgroundColor: CustomColors.buttonDarkBlueColor);
   }
 
-  static myAlign({dynamic text, double height}) {
+  static myHeader({dynamic text, double height}) {
     return Align(
       alignment: Alignment.topCenter,
       child: Container(

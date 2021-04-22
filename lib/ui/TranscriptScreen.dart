@@ -17,7 +17,7 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
   String student = '';
 
   var school;
-
+bool isLoading = true;
   var sessionId;
 
   var programId;
@@ -52,7 +52,14 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
         Scaffold(
           appBar: myAppBar(_height, parent: parent),
           backgroundColor: CustomColors.lightBackgroundColor,
-          body: ListView(
+          body: !isLoading? Padding(
+            padding: EdgeInsets.symmetric(vertical: _height*0.15, horizontal: _width * 0.45 ),
+            child: CircularProgressIndicator(
+              backgroundColor: CustomColors.darkBackgroundColor,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                  CustomColors.buttonDarkBlueColor),
+            )
+          ):ListView(
             shrinkWrap: true,
             physics: BouncingScrollPhysics(),
             children: [
@@ -240,7 +247,7 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
           //   ),
           // ),
         ),
-        Helper.myAlign(text: 'TRANSCRIPT', height: _height),
+        Helper.myHeader(text: 'TRANSCRIPT', height: _height),
       ],
     );
   }
@@ -434,9 +441,9 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
   Widget myAppBar(double _height, {AccountProvider parent}) {
     return AppBar(
       backgroundColor: Colors.transparent,
-      leading: Padding(
-          padding: EdgeInsets.only(left: _height * 0.015, bottom: 50.0),
-          child: Icon(Icons.menu_rounded)),
+      // leading: Padding(
+      //     padding: EdgeInsets.only(left: _height * 0.015, bottom: 50.0),
+      //     child: Icon(Icons.menu_rounded)),
       leadingWidth: _height * 0.03,
       title: Padding(
         padding: EdgeInsets.only(bottom: 50.0),
@@ -461,7 +468,7 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
               width: _height * 0.007,
             ),
             Container(
-              width: _height * 0.1,
+             // width: _height * 0.1,
               height: _height * 0.1,
               child: DropdownButtonHideUnderline(
                 child: DropdownButton(
@@ -478,12 +485,27 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                       this.sessionId = null;
                       this.school = null;
                       this.programId = null;
+                      isLoading = false;
                     });
                     parent.studentIdUpdate(valueAt: newValue);
-                    parent.getSchools(type: true);
+                 parent.studentUpdate(isUpdateView: true);
+                    //   parent.getSchools(type: true);
+
+                    if (mounted) {
+                      Future.delayed(Duration(seconds: 1), () {
+                        setState(() {
+                          this.sessionId = parent.sessionId;
+                          this.school = parent.schoolId;
+                          this.programId = parent.programId;
+                          isLoading =true;
+                          
+                        });
+                      });
+                      //  print('%%%%% ${parent.monthId}');
+                    }
                   },
-                  isExpanded: true,
-                  isDense: true,
+                //  isExpanded: true,
+                 // isDense: true,
                   items: parent.parents.students.values
                       .map<DropdownMenuItem<String>>((e) {
                     return DropdownMenuItem<String>(
