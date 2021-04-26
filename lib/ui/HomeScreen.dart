@@ -46,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             top: _height * 0.2,
                             left: _width * 0.4,
                           ),
-                          child: CircularProgressIndicator(),
+                          child: Helper.CIndicator(),
                         );
                       }
                       AccountModel data = snapshot.data;
@@ -233,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4.0)),
             onPressed: () {
-              parent.studentUpdate(valueAt: index,attendance: true);
+              parent.studentUpdate(valueAt: index, attendance: true);
               Navigator.pushReplacement(
                   context,
                   AnimatedPageRoute(
@@ -306,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // leading: Padding(
       //     padding: EdgeInsets.only(bottom: 50.0),
       //     child: Icon(Icons.menu_rounded)),
-     titleSpacing: _height*0.03,
+      titleSpacing: _height * 0.03,
       title: Padding(
         padding: EdgeInsets.only(bottom: 50.0),
         child: Column(

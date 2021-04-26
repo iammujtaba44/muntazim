@@ -20,6 +20,7 @@ class AccountProvider with ChangeNotifier {
   Map<String, dynamic> monthFilterdWithSubject = Map();
   Map<String, dynamic> monthData = Map();
   var schoolId;
+  dynamic attendancePercentage;
 
   var sessionId;
 
@@ -55,7 +56,7 @@ class AccountProvider with ChangeNotifier {
     // print(qs.data());
     try {
       SchoolYearsModel schoolYear =
-      schoolYearsModelFromJson(jsonEncode(qs.data()));
+          schoolYearsModelFromJson(jsonEncode(qs.data()));
       return schoolYear;
     } catch (e) {
       print(e.toString());
@@ -63,7 +64,7 @@ class AccountProvider with ChangeNotifier {
   }
 
   StudentModel getStudent(DocumentSnapshot qs) {
-    // print(qs.data());
+    //   print(qs.data());
     // if (this.parents.students.length == this.students.length) {
     //   this.students.clear();
     // }
@@ -136,8 +137,8 @@ class AccountProvider with ChangeNotifier {
     name.remove('');
 
     List<StudentModel> temp = List<StudentModel>.from(this.students.where(
-            (element) =>
-        element.firstName.trim() == name[0] &&
+        (element) =>
+            element.firstName.trim() == name[0] &&
             element.lastName.trim() == name[1]));
     print('=========${temp}');
     if (temp.isNotEmpty)
@@ -171,19 +172,11 @@ class AccountProvider with ChangeNotifier {
       this.getPrograms(
           schoolId: this.schools.keys.elementAt(0),
           sessionId:
-          this.schools.values
-              .elementAt(0)
-              .schoolYears
-              .keys
-              .elementAt(0));
+              this.schools.values.elementAt(0).schoolYears.keys.elementAt(0));
       this.getsubjects(
           schoolId1: this.schools.keys.elementAt(0),
           sessionId1:
-          this.schools.values
-              .elementAt(0)
-              .schoolYears
-              .keys
-              .elementAt(0),
+              this.schools.values.elementAt(0).schoolYears.keys.elementAt(0),
           programId1: this
               .schools
               .values
@@ -196,11 +189,7 @@ class AccountProvider with ChangeNotifier {
               .elementAt(0));
       this.schoolId = this.schools.keys.elementAt(0);
       this.sessionId =
-          this.schools.values
-              .elementAt(0)
-              .schoolYears
-              .keys
-              .elementAt(0);
+          this.schools.values.elementAt(0).schoolYears.keys.elementAt(0);
       this.programId = this
           .schools
           .values
@@ -235,7 +224,8 @@ class AccountProvider with ChangeNotifier {
     List<StudentModel> temp = List<StudentModel>.from(this
         .students
         .where((element) => element.studentId.toString() == this.studentId));
-    print(temp);
+    print(
+        "********GET SCHOOLS -> ${temp[0].schools.values.elementAt(0).schoolYears.values.elementAt(0).attendancePercentage}");
     if (temp.isNotEmpty) this.schools = temp[0].schools;
 
     this.schools.keys.forEach((element) {
@@ -269,6 +259,9 @@ class AccountProvider with ChangeNotifier {
 
   getPrograms({String schoolId, String sessionId, String schoolYearId}) async {
     this.programsList.clear();
+
+    this.attendancePercentage =
+        this.schools[schoolId].schoolYears[sessionId].attendancePercentage;
     this
         .schools[schoolId]
         .schoolYears[sessionId]
@@ -283,8 +276,7 @@ class AccountProvider with ChangeNotifier {
           .then((value) {
         print("*****(GET PROGRAMS --> Data)****");
         print(value.data());
-        if(value.data() != null)
-          this.programsList.add(value.data());
+        if (value.data() != null) this.programsList.add(value.data());
 
         notifyListeners();
       });
@@ -295,36 +287,28 @@ class AccountProvider with ChangeNotifier {
     print('$schoolId1    $programId1     $sessionId1');
     this.subjectList.clear();
     print(
-        '----${this.schools[schoolId1].schoolYears[sessionId1]
-            .programs[programId1].subjects}');
+        '----${this.schools[schoolId1].schoolYears[sessionId1].programs[programId1].subjects}');
     this.studentSubjects = this
-        .schools[schoolId1]
-        .schoolYears[sessionId1]
-        .programs[programId1]
-        .subjects ==
-        null
+                .schools[schoolId1]
+                .schoolYears[sessionId1]
+                .programs[programId1]
+                .subjects ==
+            null
         ? Map()
         : this
-        .schools[schoolId1]
-        .schoolYears[sessionId1]
-        .programs[programId1]
-        .subjects;
-
-    // this.subjectList.add(this
-    //     .schools[schoolId1]
-    //     .schoolYears[sessionId1]
-    //     .programs[programId1]
-    //     .subjects);
-    //
-    // print(subjectList);
+            .schools[schoolId1]
+            .schoolYears[sessionId1]
+            .programs[programId1]
+            .subjects;
 
     notifyListeners();
   }
 
-  getMonths({String schoolId1,
-    String programId1,
-    String sessionId1,
-    String subjectId}) {
+  getMonths(
+      {String schoolId1,
+      String programId1,
+      String sessionId1,
+      String subjectId}) {
     monthsList.clear();
     String sbId = '';
     this.studentSubjects.forEach((key, value) {
@@ -332,7 +316,7 @@ class AccountProvider with ChangeNotifier {
         sbId = key;
       }
     });
-    print('$schoolId1    $programId1     $sessionId1      $sbId');
+    // print('$schoolId1    $programId1     $sessionId1      $sbId');
     DatabaseServices()
         .students
         .doc(studentId)
@@ -343,14 +327,14 @@ class AccountProvider with ChangeNotifier {
       Map<String, dynamic> attandance = value.data() == null
           ? Map()
           : attendanceModelFromJson(jsonEncode(value.data()));
-
+      print("****GET MONTHS -> $attandance");
       if (attandance.isNotEmpty) {
         this.monthFilterdWithSubject = attandance[sbId];
         notifyListeners();
         this.monthId = this.monthFilterdWithSubject.keys.elementAt(0);
         monthsList.addAll(this.monthFilterdWithSubject.keys);
         monthsList.sort();
-      //  getMonthData(monthId: this.monthId);
+        //  getMonthData(monthId: this.monthId);
 
         // this.monthData = this.monthFilterdWithSubject[monthsList[0]];
         // print(this.monthData);

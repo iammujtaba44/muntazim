@@ -113,18 +113,21 @@ class School {
 }
 
 class SchoolYear {
-  SchoolYear({
-    this.programs,
-  });
+  SchoolYear({this.programs, this.attendancePercentage});
 
   Map<String, Program> programs;
+  dynamic attendancePercentage;
 
-  factory SchoolYear.fromJson(Map<String, dynamic> json) => SchoolYear(
-        programs: json["programs"] == null
-            ? null
-            : Map.from(json["programs"]).map(
-                (k, v) => MapEntry<String, Program>(k, Program.fromJson(v))),
-      );
+  factory SchoolYear.fromJson(Map<String, dynamic> json) {
+    // print("--++_--+${json['attendance_percentage']}");
+    return SchoolYear(
+      attendancePercentage: json['attendance_percentage'],
+      programs: json["programs"] == null
+          ? null
+          : Map.from(json["programs"])
+              .map((k, v) => MapEntry<String, Program>(k, Program.fromJson(v))),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         "programs": programs == null

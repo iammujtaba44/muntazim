@@ -7,15 +7,15 @@ String schoolYearsModelToJson(SchoolYearsModel data) =>
     json.encode(data.toJson());
 
 class SchoolYearsModel {
-  SchoolYearsModel({
-    this.isPreviousYear,
-    this.schoolId,
-    this.isCurrentYear,
-    this.schoolYear,
-    this.isNextYear,
-    this.schoolSessionId,
-  });
-
+  SchoolYearsModel(
+      {this.isPreviousYear,
+      this.schoolId,
+      this.isCurrentYear,
+      this.schoolYear,
+      this.isNextYear,
+      this.schoolSessionId,
+      this.shortName});
+  dynamic shortName;
   String isPreviousYear;
   dynamic schoolId;
   String isCurrentYear;
@@ -25,6 +25,7 @@ class SchoolYearsModel {
 
   factory SchoolYearsModel.fromJson(Map<String, dynamic> json) =>
       SchoolYearsModel(
+        shortName: json["short_name"],
         isPreviousYear: json["is_previous_year"],
         schoolId: json["school_id"],
         isCurrentYear: json["is_current_year"],

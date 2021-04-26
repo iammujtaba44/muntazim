@@ -17,6 +17,14 @@ class Helper {
     );
   }
 
+  static CIndicator() {
+    return CircularProgressIndicator(
+      backgroundColor: CustomColors.darkBackgroundColor,
+      valueColor:
+          AlwaysStoppedAnimation<Color>(CustomColors.buttonDarkBlueColor),
+    );
+  }
+
   static sBar({dynamic text, bool colorCode = true}) {
     return SnackBar(
         content: Text(
