@@ -303,9 +303,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget myAppBar(_height, _width, {UserProvider user}) {
     return AppBar(
       backgroundColor: Colors.transparent,
-      leading: Padding(
-          padding: EdgeInsets.only(bottom: 50.0),
-          child: Icon(Icons.menu_rounded)),
+      // leading: Padding(
+      //     padding: EdgeInsets.only(bottom: 50.0),
+      //     child: Icon(Icons.menu_rounded)),
+     titleSpacing: _height*0.03,
       title: Padding(
         padding: EdgeInsets.only(bottom: 50.0),
         child: Column(

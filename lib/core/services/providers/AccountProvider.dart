@@ -350,7 +350,7 @@ class AccountProvider with ChangeNotifier {
         this.monthId = this.monthFilterdWithSubject.keys.elementAt(0);
         monthsList.addAll(this.monthFilterdWithSubject.keys);
         monthsList.sort();
-        getMonthData(monthId: this.monthId);
+      //  getMonthData(monthId: this.monthId);
 
         // this.monthData = this.monthFilterdWithSubject[monthsList[0]];
         // print(this.monthData);
