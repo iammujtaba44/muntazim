@@ -136,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                         value:
                                                                             '${school.data.schoolName}',
                                                                         fSize: _height *
-                                                                            0.02),
+                                                                            0.02,fColor: CustomColors.darkBackgroundColor),
                                                                     Column(
                                                                         crossAxisAlignment: CrossAxisAlignment
                                                                             .start,
@@ -147,9 +147,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                               stream: parent.schoolYearStream(schoolYearId: student.data.schools.values.elementAt(sdIndex).schoolYears.keys.elementAt(schoolYearIndex)),
                                                                               builder: (_, schoolYear) {
                                                                                 if (!schoolYear.hasData) {
-                                                                                  return Helper.text(value: '... .. ... .', fSize: _height * 0.017);
+                                                                                  return Center();
+                                                                                //  return Helper.text(value: '... .. ... .', fSize: _height * 0.017);
                                                                                 }
-                                                                                return Helper.text(value: schoolYear.data.schoolYear, fSize: _height * 0.017);
+                                                                                else if (schoolYear.data == null)
+                                                                                  {
+                                                                                    return Center();
+
+                                                                                  }
+                                                                                else
+                                                                                  {
+                                                                                    return Helper.text(value: schoolYear.data.schoolYear, fSize: _height * 0.017,fColor: CustomColors.buttonDarkBlueColor);
+
+                                                                                  }
                                                                               });
                                                                         }))
                                                                     // Helper.text(

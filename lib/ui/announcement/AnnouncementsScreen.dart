@@ -1,6 +1,7 @@
 import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:muntazim/core/plugins.dart';
 import 'package:muntazim/utils/CustomColors.dart';
 import 'package:muntazim/utils/Helper.dart';
 import 'package:muntazim/utils/animatedDialogBox.dart';
@@ -12,10 +13,21 @@ class AnnouncementsScreen extends StatefulWidget {
 
 class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
   final GlobalKey<ExpansionTileCardState> stCard = new GlobalKey();
+
+  var schoolId;
+  @override
+  void initState() {
+    var parent = Provider.of<AccountProvider>(context,listen: false);
+    super.initState();
+
+    schoolId = parent.parents.schools.values.elementAt(0);
+
+  }
   @override
   Widget build(BuildContext context) {
     final _height = MediaQuery.of(context).size.height;
     final _width = MediaQuery.of(context).size.width;
+    var parent = Provider.of<AccountProvider>(context);
     return Stack(
       children: [
         Scaffold(
@@ -28,8 +40,60 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
               child: Container(
                 height: _height,
                 child: Column(
-                  //mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    Container(
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                     // margin: EdgeInsets.only(left: 15, bottom: 2, right: 15),
+                      padding: EdgeInsets.only(
+                        left: 15,
+                        right: 15,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Expanded(
+                            child: DropdownButtonHideUnderline(
+                              child: ButtonTheme(
+                                alignedDropdown: true,
+                                child: DropdownButton<String>(
+                                  value: schoolId,
+                                  iconSize: 30,
+                                  icon: (null),
+                                  style: TextStyle(
+                                    color: CustomColors.darkGreenColor,
+                                    fontSize: 16,
+                                  ),
+                                  hint: Text('Select School'),
+                                  onChanged: (String newValue) {
+                                    setState(() {
+                                      schoolId = newValue;
+                                    });
+                                    //
+                                    // parent.getMonths(
+                                    //     schoolId1: this.school,
+                                    //     sessionId1: this.sessionId,
+                                    //     programId1: this.programId,
+                                    //     subjectId: subjectId);
+                                    //
+                                  },
+                                  items: parent.parents.schools.values
+                                      ?.map((item) {
+                                    return new DropdownMenuItem(
+                                      child: new Text(item),
+                                      value: item.toString(),
+                                    );
+                                  })?.toList() ??
+                                      [],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                     ListView.separated(
                         shrinkWrap: true,
                         physics: ClampingScrollPhysics(),

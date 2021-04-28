@@ -17,6 +17,7 @@ class AccountProvider with ChangeNotifier {
   List schoolYearList = List();
   List programsList = List();
   List subjectList = List();
+  List schoolsWithIds = List();
   Map<String, dynamic> monthFilterdWithSubject = Map();
   Map<String, dynamic> monthData = Map();
   var schoolId;
@@ -53,11 +54,19 @@ class AccountProvider with ChangeNotifier {
   }
 
   SchoolYearsModel getSchoolYear(DocumentSnapshot qs) {
-    // print(qs.data());
+    print(qs.data());
     try {
-      SchoolYearsModel schoolYear =
-          schoolYearsModelFromJson(jsonEncode(qs.data()));
-      return schoolYear;
+      if (qs.data() != null) {
+        if (qs.data()['is_current_year'] == "Y") {
+          SchoolYearsModel schoolYear =
+              schoolYearsModelFromJson(jsonEncode(qs.data()));
+          return schoolYear;
+        }
+        else
+          return null;
+      }
+      else
+        return null;
     } catch (e) {
       print(e.toString());
     }
@@ -211,6 +220,11 @@ class AccountProvider with ChangeNotifier {
       notifyListeners();
     }
     notifyListeners();
+  }
+
+  getSchoolsWithIds() {
+    this.schoolsWithIds.add(jsonEncode(this.parents.schools));
+    //notifyListeners();
   }
 
   getSchools({String stId, bool type = false}) async {
