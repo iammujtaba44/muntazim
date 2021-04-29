@@ -18,6 +18,8 @@ class DatabaseServices extends ResponseState {
       FirebaseFirestore.instance.collection('SchoolYears');
   final CollectionReference programs =
       FirebaseFirestore.instance.collection('Programs');
+  final CollectionReference announcements =
+      FirebaseFirestore.instance.collection('Announcements');
 
   void test() {
     students

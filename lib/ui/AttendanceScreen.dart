@@ -770,6 +770,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                             Future.delayed(
                                                 Duration(milliseconds: 500),
                                                 () {
+                                                  print("******${parent.attendancePercentage}");
                                               boxState(() {
                                                 attendancePercentage =
                                                     parent.attendancePercentage;

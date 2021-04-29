@@ -17,6 +17,7 @@ class AccountProvider with ChangeNotifier {
   List schoolYearList = List();
   List programsList = List();
   List subjectList = List();
+  List schoolsWithIds = List();
   Map<String, dynamic> monthFilterdWithSubject = Map();
   Map<String, dynamic> monthData = Map();
   var schoolId;
@@ -29,6 +30,7 @@ class AccountProvider with ChangeNotifier {
   var monthId;
 
   List monthsList = List();
+  List announcementList = List();
 
   AccountModel getAccount(DocumentSnapshot qs) {
     //accountModelFromJson(jsonEncode(qs.data()));
@@ -53,11 +55,17 @@ class AccountProvider with ChangeNotifier {
   }
 
   SchoolYearsModel getSchoolYear(DocumentSnapshot qs) {
-    // print(qs.data());
+    print(qs.data());
     try {
-      SchoolYearsModel schoolYear =
-          schoolYearsModelFromJson(jsonEncode(qs.data()));
-      return schoolYear;
+      if (qs.data() != null) {
+        if (qs.data()['is_current_year'] == "Y") {
+          SchoolYearsModel schoolYear =
+              schoolYearsModelFromJson(jsonEncode(qs.data()));
+          return schoolYear;
+        } else
+          return null;
+      } else
+        return null;
     } catch (e) {
       print(e.toString());
     }
@@ -213,6 +221,11 @@ class AccountProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  getSchoolsWithIds() {
+    this.schoolsWithIds.add(jsonEncode(this.parents.schools));
+    //notifyListeners();
+  }
+
   getSchools({String stId, bool type = false}) async {
     this.schoolList.clear();
     this.schoolYearList.clear();
@@ -347,5 +360,57 @@ class AccountProvider with ChangeNotifier {
   getMonthData({String monthId}) {
     this.monthData = this.monthFilterdWithSubject[monthId];
     notifyListeners();
+  }
+
+  getSchoolYearForAnnouncement(
+      {String selectedSchoolId, bool primary = false, BuildContext context}) {
+    this.announcementList.clear();
+    Provider.of<UserProvider>(context, listen: false).readAs();
+    var user = Provider.of<UserProvider>(context, listen: false);
+    DatabaseServices()
+        .schoolYears
+        .where("school_id", isEqualTo: int.tryParse(selectedSchoolId))
+        .where("is_current_year", isEqualTo: "Y")
+        .get()
+        .then((value) {
+      QueryDocumentSnapshot temp = value.docs[0];
+
+      DatabaseServices()
+          .announcements
+          .where("masjid_id", isEqualTo: user.parentData.masjidId)
+          .where("school_id", isEqualTo: int.tryParse(selectedSchoolId))
+          .where("school_year",
+              isEqualTo: temp.data()['school_session_id'].toString())
+          .get()
+          .then((announcements) {
+        print(announcements.docs[0].data());
+
+        // Map<String, dynamic> tempAnnouncements =
+        //     announcements.docs[0].data()['recipients_detail'];
+        // print("****$tempAnnouncements");
+        print("User id --> ${selectedSchoolId}");
+        print("User id --> ${temp.data()['school_session_id'].toString()}");
+
+        announcements.docs.forEach((element) {
+          // print("-------------");
+          // print(element.data());
+          // print("-------------");
+          if (element.data()['is_parent'] == "N") {
+            try {
+              Map<String, dynamic> tempAnnouncements =
+                  element.data()['recipients_detail'];
+              // print("****${tempAnnouncements.keys}");
+              //print(element.data());
+              if (tempAnnouncements.keys
+                  .contains(user.parentData.parentId.toString())) {
+                print(element.data());
+                announcementList.add(element.data());
+              }
+            } catch (e) {}
+          }
+        });
+      });
+    });
+    if (!primary) notifyListeners();
   }
 }
