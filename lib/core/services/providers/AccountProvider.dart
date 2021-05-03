@@ -30,6 +30,9 @@ class AccountProvider with ChangeNotifier {
   var monthId;
 
   List monthsList = List();
+  List announcementList = List();
+
+  List subjectsIcons = List();
 
   AccountModel getAccount(DocumentSnapshot qs) {
     //accountModelFromJson(jsonEncode(qs.data()));
@@ -61,11 +64,9 @@ class AccountProvider with ChangeNotifier {
           SchoolYearsModel schoolYear =
               schoolYearsModelFromJson(jsonEncode(qs.data()));
           return schoolYear;
-        }
-        else
+        } else
           return null;
-      }
-      else
+      } else
         return null;
     } catch (e) {
       print(e.toString());
@@ -87,7 +88,7 @@ class AccountProvider with ChangeNotifier {
   }
 
   ReportCardModel getReportCard(DocumentSnapshot qs, String subjectId) {
-    // print(qs.data()[subjectId]);
+    print(qs.data()[subjectId]);
     try {
       ReportCardModel r = ReportCardModel.fromJson(qs.data()[subjectId]);
       return r;
@@ -300,6 +301,7 @@ class AccountProvider with ChangeNotifier {
   getsubjects({String schoolId1, String programId1, String sessionId1}) {
     print('$schoolId1    $programId1     $sessionId1');
     this.subjectList.clear();
+    this.subjectsIcons.clear();
     print(
         '----${this.schools[schoolId1].schoolYears[sessionId1].programs[programId1].subjects}');
     this.studentSubjects = this
@@ -314,6 +316,24 @@ class AccountProvider with ChangeNotifier {
             .schoolYears[sessionId1]
             .programs[programId1]
             .subjects;
+
+    print("*********GET SUBJECTS METHOD");
+    print("*********(${this.studentSubjects})");
+
+    if (this.studentSubjects.isNotEmpty) {
+      this.studentSubjects.forEach((key, value) {
+        DatabaseServices()
+            .subjects
+            .doc('${sessionId1}_${programId1}_$key')
+            .get()
+            .then((subjectIcon) {
+          this.subjectsIcons.add(subjectIcon.data()['subject_icon']);
+          notifyListeners();
+          print(
+              "***SUbject Icon data--> (${subjectIcon.data()['subject_icon']})");
+        });
+      });
+    }
 
     notifyListeners();
   }
@@ -361,5 +381,57 @@ class AccountProvider with ChangeNotifier {
   getMonthData({String monthId}) {
     this.monthData = this.monthFilterdWithSubject[monthId];
     notifyListeners();
+  }
+
+  getSchoolYearForAnnouncement(
+      {String selectedSchoolId, bool primary = false, BuildContext context}) {
+    this.announcementList.clear();
+    Provider.of<UserProvider>(context, listen: false).readAs();
+    var user = Provider.of<UserProvider>(context, listen: false);
+    DatabaseServices()
+        .schoolYears
+        .where("school_id", isEqualTo: int.tryParse(selectedSchoolId))
+        .where("is_current_year", isEqualTo: "Y")
+        .get()
+        .then((value) {
+      QueryDocumentSnapshot temp = value.docs[0];
+
+      DatabaseServices()
+          .announcements
+          .where("masjid_id", isEqualTo: user.parentData.masjidId)
+          .where("school_id", isEqualTo: int.tryParse(selectedSchoolId))
+          .where("school_year",
+              isEqualTo: temp.data()['school_session_id'].toString())
+          .get()
+          .then((announcements) {
+        print(announcements.docs[0].data());
+
+        // Map<String, dynamic> tempAnnouncements =
+        //     announcements.docs[0].data()['recipients_detail'];
+        // print("****$tempAnnouncements");
+        print("User id --> ${selectedSchoolId}");
+        print("User id --> ${temp.data()['school_session_id'].toString()}");
+
+        announcements.docs.forEach((element) {
+          // print("-------------");
+          // print(element.data());
+          // print("-------------");
+          if (element.data()['is_parent'] == "N") {
+            try {
+              Map<String, dynamic> tempAnnouncements =
+                  element.data()['recipients_detail'];
+              // print("****${tempAnnouncements.keys}");
+              //print(element.data());
+              if (tempAnnouncements.keys
+                  .contains(user.parentData.parentId.toString())) {
+                print(element.data());
+                announcementList.add(element.data());
+              }
+            } catch (e) {}
+          }
+        });
+      });
+    });
+    if (!primary) notifyListeners();
   }
 }

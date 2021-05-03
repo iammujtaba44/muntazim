@@ -7,10 +7,14 @@ class Helper {
       {dynamic value,
       double fSize = 0.0,
       FontWeight fWeight = FontWeight.w400,
-      Color fColor}) {
+      Color fColor,
+      TextDecoration tDecoration}) {
     return Text(
       value,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
       style: TextStyle(
+          decoration: tDecoration == null ? null : tDecoration,
           fontSize: fSize != 0.0 ? fSize : 25.0,
           color: fColor != null ? fColor : CustomColors.darkGreenColor,
           fontWeight: fWeight != FontWeight.w400 ? fWeight : FontWeight.w400),
@@ -50,10 +54,22 @@ class Helper {
       alignment: Alignment.topCenter,
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 20, vertical: height * 0.07),
-        child: Text(
-          text,
-          style: TextStyle(
-              fontSize: 22, color: Colors.white, fontWeight: FontWeight.bold),
+        child: Row(
+          children: [
+            Icon(
+              Icons.menu_rounded,
+              color: Colors.white,
+            ),
+            Spacer(),
+            Text(
+              text.toString().toUpperCase(),
+              style: TextStyle(
+                  fontSize: 22,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
+            ),
+            Spacer(),
+          ],
         ),
       ),
     );

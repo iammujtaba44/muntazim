@@ -51,26 +51,28 @@ class animated_dialog_box {
             child: Opacity(
               opacity: a1.value,
               child: AlertDialog(
-                contentPadding: EdgeInsets.zero,
+                contentPadding: EdgeInsets.all(10.0),
 
                 shape: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15.0)),
                 title: title,
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     //  icon ?? SizedBox(),
                     //   Container(
                     //     height: 10,
                     //   ),                  //   ),
                     yourWidget,
-                    Row(
-                        children: [
+                    Row(children: [
                       firstButton,
-                   //   Spacer(),
+                      Spacer(),
                       secondButton,
                     ]),
-                   const SizedBox(height: 10,)
+                    const SizedBox(
+                      height: 10,
+                    )
                   ],
                 ),
                 // actions: <Widget>[

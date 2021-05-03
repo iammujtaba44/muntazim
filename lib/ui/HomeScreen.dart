@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:muntazim/core/plugins.dart';
 import 'package:muntazim/core/services/models/SchoolModel.dart';
 import 'package:muntazim/core/services/models/SchoolYearsModel.dart';
@@ -75,10 +77,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                         elevationCurve: Curves.bounceOut,
                                         heightFactorCurve: Curves.easeInOut,
                                         contentPadding: EdgeInsets.all(10.0),
+
                                         leading: CircleAvatar(
                                           radius: 30.0,
                                           backgroundColor:
                                               CustomColors.lightGreenColor,
+                                          // backgroundImage: NetworkImage(
+                                          //     parent.students[index].photo),
                                         ),
                                         title: Helper.text(
                                             value:
@@ -136,7 +141,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                         value:
                                                                             '${school.data.schoolName}',
                                                                         fSize: _height *
-                                                                            0.02,fColor: CustomColors.darkBackgroundColor),
+                                                                            0.02,
+                                                                        fColor:
+                                                                            CustomColors.darkBackgroundColor),
                                                                     Column(
                                                                         crossAxisAlignment: CrossAxisAlignment
                                                                             .start,
@@ -148,18 +155,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                               builder: (_, schoolYear) {
                                                                                 if (!schoolYear.hasData) {
                                                                                   return Center();
-                                                                                //  return Helper.text(value: '... .. ... .', fSize: _height * 0.017);
+                                                                                  //  return Helper.text(value: '... .. ... .', fSize: _height * 0.017);
+                                                                                } else if (schoolYear.data == null) {
+                                                                                  return Center();
+                                                                                } else {
+                                                                                  return Helper.text(value: schoolYear.data.schoolYear, fSize: _height * 0.017, fColor: CustomColors.buttonDarkBlueColor);
                                                                                 }
-                                                                                else if (schoolYear.data == null)
-                                                                                  {
-                                                                                    return Center();
-
-                                                                                  }
-                                                                                else
-                                                                                  {
-                                                                                    return Helper.text(value: schoolYear.data.schoolYear, fSize: _height * 0.017,fColor: CustomColors.buttonDarkBlueColor);
-
-                                                                                  }
                                                                               });
                                                                         }))
                                                                     // Helper.text(
@@ -412,4 +413,45 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void onDismiss() {}
+}
+
+class GetNetworkImage extends StatefulWidget {
+  const GetNetworkImage({
+    Key key,
+    @required this.uRL,
+    @required double height,
+  })  : _height = height,
+        super(key: key);
+
+  final String uRL;
+  final double _height;
+
+  @override
+  _GetNetworkImageState createState() => _GetNetworkImageState();
+}
+
+class _GetNetworkImageState extends State<GetNetworkImage> {
+  Map<String, String> headers = Map();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CachedNetworkImage(
+      fit: BoxFit.cover,
+      fadeInCurve: Curves.easeInCirc,
+      imageUrl: widget.uRL,
+      imageBuilder: (context, imageProvider) =>
+          CircleAvatar(backgroundImage: imageProvider),
+      placeholder: (context, url) => CircleAvatar(
+          backgroundColor: Colors.transparent, child: Helper.CIndicator()),
+      errorWidget: (context, url, error) => Icon(
+        Icons.error,
+        size: 40,
+      ),
+    );
+  }
 }

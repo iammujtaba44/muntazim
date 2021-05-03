@@ -11,14 +11,16 @@ Map<String, dynamic> attendanceModelFromJson(String str) =>
     Map.from(json.decode(str)).map((k, v) => MapEntry<String, dynamic>(k, v));
 
 class ReportCardModel {
-  ReportCardModel({
-    this.duration,
-  });
+  ReportCardModel({this.duration, this.subjectPercentage});
 
   List<DurationSubject> duration;
+  dynamic subjectPercentage;
   // List<dynamic> duration;
   factory ReportCardModel.fromJson(Map<String, dynamic> json) =>
       ReportCardModel(
+        subjectPercentage: json["subjects_percentage"] == null
+            ? "00.00"
+            : json["subjects_percentage"],
         duration: List<DurationSubject>.from(
             json["duration"].map((x) => DurationSubject.fromJson(x))),
         // duration: List<dynamic>.from(json["duration"])
@@ -66,10 +68,14 @@ class Attributes {
   List<Assignment> attendance;
 
   factory Attributes.fromJson(Map<String, dynamic> json) => Attributes(
-        assignment: List<Assignment>.from(
-            json["assignment"].map((x) => Assignment.fromJson(x))),
-        attendance: List<Assignment>.from(
-            json["attendance"].map((x) => Assignment.fromJson(x))),
+        assignment: json["assignment"] == null
+            ? null
+            : List<Assignment>.from(
+                json["assignment"].map((x) => Assignment.fromJson(x))),
+        attendance: json["attendance"] == null
+            ? null
+            : List<Assignment>.from(
+                json["attendance"].map((x) => Assignment.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:muntazim/core/plugins.dart';
 import 'package:muntazim/core/services/models/ReportCardModel.dart';
 import 'package:muntazim/core/services/models/studentModel/StudentModel.dart';
@@ -230,7 +231,8 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                                   subjectName:
                                       '${parent.studentSubjects.values.elementAt(index)}',
                                   totalMarks: '10',
-                                  reportCardDocId: '${sessionId}_$programId'),
+                                  reportCardDocId: '${sessionId}_$programId',
+                                  index: index),
                             ),
                           );
                         })
@@ -260,7 +262,8 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
       dynamic subjectId,
       dynamic totalMarks,
       dynamic reportCardDocId,
-      AccountProvider parent}) {
+      AccountProvider parent,
+      int index}) {
     return Padding(
       padding: EdgeInsets.fromLTRB(25, _height * 0.01, 25, 0),
       child: ExpansionTileCard(
@@ -279,6 +282,16 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
           child: CircleAvatar(
             radius: _height * 0.032,
             backgroundColor: Colors.white,
+            child: parent.subjectsIcons.isEmpty
+                ? Helper.CIndicator()
+                : parent.subjectsIcons.length < (index + 1)
+                    ? Helper.CIndicator()
+                    : parent.subjectsIcons[index] == null
+                        ? Icon(
+                            Icons.error_outline,
+                            color: Colors.red,
+                          )
+                        : Image.network(parent.subjectsIcons[index] ?? ""),
           ),
         ),
         title: Row(
@@ -298,20 +311,20 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
             Helper.text(value: '100', fSize: _height * 0.017),
           ],
         ),
-        subtitle: Padding(
-          padding: EdgeInsets.only(top: 2.0),
-          child: Row(
-            children: [
-              Helper.text(value: 'Semester 1', fSize: _height * 0.022),
-              Spacer(
-                flex: 3,
-              ),
-              Helper.text(
-                  value: 'A', fSize: _height * 0.028, fWeight: FontWeight.bold),
-              Spacer()
-            ],
-          ),
-        ),
+        // subtitle: Padding(
+        //   padding: EdgeInsets.only(top: 2.0),
+        //   child: Row(
+        //     children: [
+        //       Helper.text(value: 'Semester 1', fSize: _height * 0.022),
+        //       Spacer(
+        //         flex: 3,
+        //       ),
+        //       Helper.text(
+        //           value: 'A', fSize: _height * 0.028, fWeight: FontWeight.bold),
+        //       Spacer()
+        //     ],
+        //   ),
+        // ),
 
         trailing: Padding(
             padding: EdgeInsets.only(top: 40.0),
@@ -357,36 +370,39 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                       text3: '.. .',
                       cInd: 1,
                       bottom: false);
-                }
-
-                return Container(
-                  // height: _height * 0.1,
-                  child: SingleChildScrollView(
-                      child: Column(
-                          children: List.generate(snapshot.data.duration.length,
-                              (index) {
-                    if (index < snapshot.data.duration.length - 1) {
-                      return getUpperRow(
-                        text1: '${snapshot.data.duration[index].durationTitle}',
-                        text2: snapshot
-                            .data.duration[index].grading.percentageGrade.grade,
-                        text3:
-                            '${snapshot.data.duration[index].grading.percentageGrade.percentage}%',
-                        cInd: 1,
-                      );
-                    } else {
-                      return getUpperRow(
+                } else {
+                  print(
+                      "****** Subject Per --> (${snapshot.data.subjectPercentage ?? 'null'})");
+                  return Container(
+                    // height: _height * 0.1,
+                    child: SingleChildScrollView(
+                        child: Column(
+                            children: List.generate(
+                                snapshot.data.duration.length, (index) {
+                      if (index < snapshot.data.duration.length - 1) {
+                        return getUpperRow(
                           text1:
                               '${snapshot.data.duration[index].durationTitle}',
-                          text2:
-                              '${snapshot.data.duration[index].grading.percentageGrade.grade}',
+                          text2: snapshot.data.duration[index].grading
+                              .percentageGrade.grade,
                           text3:
                               '${snapshot.data.duration[index].grading.percentageGrade.percentage}%',
                           cInd: 1,
-                          bottom: false);
-                    }
-                  }))),
-                );
+                        );
+                      } else {
+                        return getUpperRow(
+                            text1:
+                                '${snapshot.data.duration[index].durationTitle}',
+                            text2:
+                                '${snapshot.data.duration[index].grading.percentageGrade.grade}',
+                            text3:
+                                '${snapshot.data.duration[index].grading.percentageGrade.percentage}%',
+                            cInd: 1,
+                            bottom: false);
+                      }
+                    }))),
+                  );
+                }
               }),
           // getUpperRow(
           //   text1: 'Quarter 1',
@@ -534,34 +550,34 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
           ),
         ),
       ),
-      actions: [
-        Padding(
-          padding: EdgeInsets.only(right: 15.0, bottom: 10.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text('Current Score',
-                  style:
-                      TextStyle(fontWeight: FontWeight.w400, fontSize: 20.0)),
-              Text('84.50%',
-                  style:
-                      TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
-              Row(
-                children: [
-                  Text('Grade  ',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w400, fontSize: 15.0)),
-                  Text('A',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 20.0)),
-                ],
-              )
-            ],
-          ),
-        )
-      ],
+      // actions: [
+      //   Padding(
+      //     padding: EdgeInsets.only(right: 15.0, bottom: 10.0),
+      //     child: Column(
+      //       mainAxisAlignment: MainAxisAlignment.center,
+      //       mainAxisSize: MainAxisSize.min,
+      //       crossAxisAlignment: CrossAxisAlignment.end,
+      //       children: [
+      //         Text('Current Score',
+      //             style:
+      //                 TextStyle(fontWeight: FontWeight.w400, fontSize: 20.0)),
+      //         Text('84.50%',
+      //             style:
+      //                 TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+      //         Row(
+      //           children: [
+      //             Text('Grade  ',
+      //                 style: TextStyle(
+      //                     fontWeight: FontWeight.w400, fontSize: 15.0)),
+      //             Text('A',
+      //                 style: TextStyle(
+      //                     fontWeight: FontWeight.bold, fontSize: 20.0)),
+      //           ],
+      //         )
+      //       ],
+      //     ),
+      //   )
+      // ],
     );
   }
 }

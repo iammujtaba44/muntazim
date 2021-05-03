@@ -57,8 +57,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       Future.delayed(Duration(seconds: 2), () {
         setState(() {
           this.attendancePercentage = parent.attendancePercentage ?? null;
-          this.academicYearName =
-              parent.schoolYearList[0]['short_name'] ?? null;
+          print("-----+****${parent.schoolYearList[0]['school_session_id']}");
+          this.academicYearName = parent.schoolYearList[0]['short_name'] ??
+              parent.schoolYearList[0]['school_year'];
+
           this.monthId = parent.monthId;
         });
         eventsFiller(parent: parent);
@@ -555,8 +557,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           this.school = parent.schoolId;
                           this.programId = parent.programId;
                           this.subjectId = parent.subjectId;
-                          this.academicYearName =
-                              parent.schoolYearList[0]['short_name'] ?? null;
+                          this.academicYearName = parent.schoolYearList[0]
+                                  ['short_name'] ??
+                              parent.schoolYearList[0]['school_year'];
 
                           // this.monthId = parent.monthId;
                         });
@@ -618,7 +621,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           value: academicYearName ??
                               'Academic Year', //'Academic Year',
                           fWeight: FontWeight.bold,
-                          fSize: 20.0,
+                          fSize: academicYearName.length > 12
+                              ? _height * 0.02
+                              : 20.0,
                           fColor: Colors.white),
                       Text('Present',
                           style: TextStyle(
@@ -708,7 +713,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                           items: parent.schoolList?.map((item) {
                                                 return new DropdownMenuItem(
                                                   child: new Text(
-                                                      item['school_name']),
+                                                    item['school_name'],
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            item['school_name']
+                                                                        .length >
+                                                                    12
+                                                                ? height * 0.023
+                                                                : height *
+                                                                    0.025),
+                                                  ),
                                                   value: item['school_id']
                                                       .toString(),
                                                 );
@@ -759,8 +775,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                               this.programId = null;
                                               this.monthId = null;
                                               this.subjectId = null;
-                                              this.academicYearName =
-                                                  temp[0]["short_name"] ?? null;
+                                              this.academicYearName = temp[0]
+                                                      ["short_name"] ??
+                                                  temp[0]["school_year"];
                                               // print(sessionId);
                                             });
 
@@ -770,7 +787,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                             Future.delayed(
                                                 Duration(milliseconds: 500),
                                                 () {
-                                                  print("******${parent.attendancePercentage}");
+                                              print(
+                                                  "******${parent.attendancePercentage}");
                                               boxState(() {
                                                 attendancePercentage =
                                                     parent.attendancePercentage;
@@ -785,6 +803,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                                         item['school_year'],
                                                     overflow:
                                                         TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                        fontSize: item[
+                                                                    'short_name'] !=
+                                                                null
+                                                            ? height * 0.025
+                                                            : item['school_year']
+                                                                        .length >
+                                                                    12
+                                                                ? height * 0.023
+                                                                : height *
+                                                                    0.025),
                                                   ),
                                                   value:
                                                       item['school_session_id']
@@ -839,16 +868,26 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                                 sessionId1: this.sessionId,
                                                 programId1: programId);
                                           },
-                                          items: parent.programsList
-                                                  ?.map((item) {
-                                                return new DropdownMenuItem(
-                                                  child: new Text(
-                                                      item['program_title']),
-                                                  value: item['program_id']
-                                                      .toString(),
-                                                );
-                                              })?.toList() ??
-                                              [],
+                                          items:
+                                              parent.programsList?.map((item) {
+                                                    return new DropdownMenuItem(
+                                                      child: new Text(
+                                                        item['program_title'],
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: TextStyle(
+                                                            fontSize: item['program_title']
+                                                                        .length >
+                                                                    12
+                                                                ? height * 0.023
+                                                                : height *
+                                                                    0.025),
+                                                      ),
+                                                      value: item['program_id']
+                                                          .toString(),
+                                                    );
+                                                  })?.toList() ??
+                                                  [],
                                         ),
                                       ),
                                     ),
@@ -900,7 +939,16 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                           items: parent.studentSubjects.values
                                                   ?.map((item) {
                                                 return new DropdownMenuItem(
-                                                  child: new Text(item),
+                                                  child: new Text(
+                                                    item,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                        fontSize: item.length >
+                                                                12
+                                                            ? height * 0.023
+                                                            : height * 0.025),
+                                                  ),
                                                   value: item.toString(),
                                                 );
                                               })?.toList() ??
