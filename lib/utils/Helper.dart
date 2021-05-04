@@ -1,8 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:muntazim/utils/CustomColors.dart';
 
 class Helper {
+  static String dateFormat(DateTime date) {
+    return DateFormat.yMMMd().format(date).toString();
+  }
+
   static text(
       {dynamic value,
       double fSize = 0.0,

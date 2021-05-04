@@ -27,19 +27,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   StreamController _calenderStream = StreamController<bool>.broadcast();
 
   var school;
-
   var sessionId;
-
   var programId;
-
   bool searchEnable = false;
-
   String subjectId;
-
   String monthId;
   String academicYearName = "";
-
   String attendancePercentage = "";
+  String schoolName = "";
 
   @override
   void initState() {
@@ -58,6 +53,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         setState(() {
           this.attendancePercentage = parent.attendancePercentage ?? null;
           print("-----+****${parent.schoolYearList[0]['school_session_id']}");
+          this.schoolName = parent.schoolList[0]['school_name'];
           this.academicYearName = parent.schoolYearList[0]['short_name'] ??
               parent.schoolYearList[0]['school_year'];
 
@@ -560,6 +556,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           this.academicYearName = parent.schoolYearList[0]
                                   ['short_name'] ??
                               parent.schoolYearList[0]['school_year'];
+                          this.schoolName = parent.schoolList[0]['school_name'];
 
                           // this.monthId = parent.monthId;
                         });
@@ -618,6 +615,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Helper.text(
+                          value: schoolName ??
+                              'School', //'Academic Year',
+                          fWeight: FontWeight.bold,
+                          fSize: schoolName.length > 12
+                              ? _height * 0.02
+                              : 20.0,
+                          fColor: Colors.white),
+                      Helper.text(
                           value: academicYearName ??
                               'Academic Year', //'Academic Year',
                           fWeight: FontWeight.bold,
@@ -625,9 +630,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               ? _height * 0.02
                               : 20.0,
                           fColor: Colors.white),
-                      Text('Present',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 20.0)),
+                      // x
                       Helper.text(
                           value: attendancePercentage ?? '00.00%',
                           fColor: Colors.white,
@@ -697,13 +700,20 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                           ),
                                           hint: Text('Select School'),
                                           onChanged: (String newValue) {
-                                            print(newValue);
+                                            List temp = List.from(parent
+                                                .schoolList
+                                                .where((element) =>
+                                            element['school_id']
+                                                .toString() ==
+                                                newValue));
+                                            print("****School name (${temp})***");
                                             boxState(() {
                                               school = newValue;
                                               this.sessionId = null;
                                               this.programId = null;
                                               this.monthId = null;
                                               this.subjectId = null;
+                                              this.schoolName = temp[0]['school_name'];
                                               //   print(school);
                                             });
                                             // parent.clearSubjectList();

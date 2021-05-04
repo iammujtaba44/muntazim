@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         animateTrailing: true,
                                         shadowColor:
                                             CustomColors.darkGreenColor,
-                                        duration: Duration(seconds: 1),
+                                        duration: Duration(milliseconds: 500),
                                         elevation: 2.0,
                                         elevationCurve: Curves.bounceOut,
                                         heightFactorCurve: Curves.easeInOut,

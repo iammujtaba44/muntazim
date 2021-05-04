@@ -405,33 +405,32 @@ class AccountProvider with ChangeNotifier {
           .get()
           .then((announcements) {
         print(announcements.docs[0].data());
-
-        // Map<String, dynamic> tempAnnouncements =
-        //     announcements.docs[0].data()['recipients_detail'];
-        // print("****$tempAnnouncements");
         print("User id --> ${selectedSchoolId}");
         print("User id --> ${temp.data()['school_session_id'].toString()}");
 
         announcements.docs.forEach((element) {
-          // print("-------------");
-          // print(element.data());
-          // print("-------------");
           if (element.data()['is_parent'] == "N") {
             try {
               Map<String, dynamic> tempAnnouncements =
                   element.data()['recipients_detail'];
-              // print("****${tempAnnouncements.keys}");
-              //print(element.data());
+              print(element.data());
               if (tempAnnouncements.keys
                   .contains(user.parentData.parentId.toString())) {
                 print(element.data());
                 announcementList.add(element.data());
               }
-            } catch (e) {}
+            } catch (e) {
+              print("error4 --> ${e.toString()}");
+            }
           }
         });
+      }).catchError((onError1) {
+        print("error1 --> ${onError1}");
       });
+    }).catchError((onError) {
+      print("error2 --> ${onError}");
     });
+
     if (!primary) notifyListeners();
   }
 }

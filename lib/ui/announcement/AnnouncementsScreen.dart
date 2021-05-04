@@ -26,6 +26,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
   void initState() {
     var parent = Provider.of<AccountProvider>(context, listen: false);
     super.initState();
+
     _permissionService.requestStoragePermission();
     dataController.sink.add(false);
     initPlatformState();
@@ -136,6 +137,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                               return Helper.CIndicator();
                             else {
                               return ListView.builder(
+                                  reverse: true,
                                   shrinkWrap: true,
                                   physics: ClampingScrollPhysics(),
                                   itemBuilder: (context, index) {
@@ -170,12 +172,13 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
             ),
           ),
         ),
-        Helper.myHeader(text: 'Announcements', height: _height),
+        Helper.myHeader(text: 'Notifications', height: _height),
       ],
     );
   }
 
   Widget AnnouncementBox({Map data, double width, double height, int index}) {
+    print("***(${data['sent_date']})");
     return Container(
       decoration: BoxDecoration(
           color: Colors.white,
@@ -196,21 +199,23 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
           Spacer(),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
             Helper.text(
-                value:
-                    '${data['sent_date'].toString().split(' ')[0] ?? "00-00-0000"}',
+                value: data['sent_date'] == null
+                    ? "00-00-0000"
+                    : '${Helper.dateFormat(DateTime.tryParse(data['sent_date'].toString().split(' ')[0])) ?? "00-00-0000"}',
                 fSize: height * 0.02),
-            // Helper.text(
-            //     value:
-            //         '${data['sent_date'].toString().split(' ')[1] ?? "00-00"}',
-            //     fSize: height * 0.02)
+            Helper.text(
+                value: data['sent_date'] == null
+                    ? "00-00"
+                    : '${data['sent_date'].toString().split(' ')[1] ?? "00-00"}',
+                fSize: height * 0.02)
           ])
         ]),
         Helper.text(
             value:
                 '${data['email_message'] ?? "All students and staff invited. This is test announcement to be sent to all parents from Muntazim App"}',
-            fSize: height * 0.016,
-            fColor: Colors.black45,
-            fWeight: FontWeight.bold),
+            fSize: height * 0.019,
+            fColor: Colors.black54,
+            fWeight: FontWeight.w400),
         Row(children: [
           Spacer(),
           InkWell(
@@ -230,18 +235,25 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Helper.text(
-                            value:
-                                '${data['sent_date'].toString().split(' ')[0] ?? "00-00-0000"}',
+                            value: data['sent_date'] == null
+                                ? "00-00-0000"
+                                : '${data['sent_date'].toString().split(' ')[0] ?? "00-00-0000"}',
                             fSize: height * 0.02),
-                        // Helper.text(
-                        //     value:
-                        //         '${data['sent_date'].toString().split(' ')[1] ?? "00-00"}',
-                        //     fSize: height * 0.02)
+                        Helper.text(
+                            value: data['sent_date'] == null
+                                ? "00-00"
+                                : '${data['sent_date'].toString().split(' ')[1] ?? "00-00"}',
+                            fSize: height * 0.02)
                       ]),
-                  secondButton: Column(children: [
-                    Helper.text(value: '', fSize: height * 0.02),
-                    Helper.text(value: 'Share', fSize: height * 0.02),
-                  ]),
+                  secondButton: InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: Column(children: [
+                      Helper.text(value: '', fSize: height * 0.02),
+                      Helper.text(value: 'Dismiss', fSize: height * 0.03),
+                    ]),
+                  ),
                   // IF YOU WANT TO ADD ICON
                   yourWidget: Container(
                     // height: height * 0.2,
@@ -252,38 +264,64 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                           Text(
                               '${data['email_message'] ?? "All students and staff invited. This is test announcement to be sent to all parents from Muntazim App"}',
                               style: TextStyle(
-                                  fontSize: height * 0.016,
-                                  color: Colors.black45,
-                                  fontWeight: FontWeight.bold)),
+                                  fontSize: height * 0.019,
+                                  color: Colors.black54,
+                                  fontWeight: FontWeight.w400)),
                           SizedBox(
                             height: height * 0.05,
                           ),
+                          Helper.text(value: "Attachments"),
+                          SizedBox(
+                            height: height * 0.01,
+                          ),
                           Wrap(
+                              runSpacing: 5.0,
                               children: List.generate(data['attachment'].length,
                                   (index) {
-                            return InkWell(
-                                onTap: () {
-                                  openDocument(data['attachment'][index]);
-                                },
-                                child: CircleAvatar(
-                                  radius: height * 0.027,
-                                  backgroundColor: CustomColors.darkGreenColor,
-                                  child: CircleAvatar(
-                                    radius: height * 0.025,
-                                    backgroundColor: Colors.white,
-                                    child: Icon(
-                                      Icons.download_rounded,
-                                      color: CustomColors.darkGreenColor,
-                                    ),
-                                  ),
-                                )
-                                // child: Helper.text(
-                                //     value: data['attachment'][index],
-                                //     fSize: height * 0.016,
-                                //     fColor: CustomColors.darkGreenColor,
-                                //     fWeight: FontWeight.bold),
-                                );
-                          }))
+                                List temp =
+                                    data['attachment'][index].split('%');
+                                return InkWell(
+                                    onTap: () {
+                                      openDocument(data['attachment'][index]);
+                                    },
+                                    child: Wrap(
+                                      crossAxisAlignment:
+                                          WrapCrossAlignment.center,
+                                      children: [
+                                        CircleAvatar(
+                                          radius: height * 0.021,
+                                          backgroundColor:
+                                              CustomColors.darkGreenColor,
+                                          child: CircleAvatar(
+                                            radius: height * 0.019,
+                                            backgroundColor: Colors.white,
+                                            child: Icon(
+                                              Icons.download_rounded,
+                                              color:
+                                                  CustomColors.darkGreenColor,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 5.0,
+                                        ),
+                                        temp.length < 2
+                                            ? Helper.text(
+                                                value: '${temp[0]}',
+                                                fSize: height * 0.02)
+                                            : Helper.text(
+                                                value:
+                                                    '${data['attachment'][index].split('%')[1].split('?')[0]}',
+                                                fSize: height * 0.02)
+                                      ],
+                                    )
+                                    // child: Helper.text(
+                                    //     value: data['attachment'][index],
+                                    //     fSize: height * 0.016,
+                                    //     fColor: CustomColors.darkGreenColor,
+                                    //     fWeight: FontWeight.bold),
+                                    );
+                              }))
 
                           // Helper.text(
                           //     value: data['attachment'][0],

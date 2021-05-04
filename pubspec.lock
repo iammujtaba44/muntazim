@@ -133,7 +133,7 @@ packages:
       name: equatable
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.2.5"
+    version: "1.2.6"
   expansion_tile_card:
     dependency: "direct main"
     description:
@@ -250,7 +250,7 @@ packages:
       name: flutter_calendar_carousel
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.5.1"
+    version: "1.5.3"
   flutter_launcher_icons:
     dependency: "direct dev"
     description:
@@ -351,7 +351,7 @@ packages:
       name: page_transition
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.7+5"
+    version: "1.1.7+6"
   path:
     dependency: transitive
     description:

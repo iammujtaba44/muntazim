@@ -218,6 +218,13 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                               scale = 1;
                             }
                           }
+                         // dynamic subjectPercentage;
+                          // parent.reportCardStream(
+                          //     subjectId: parent.studentSubjects.keys
+                          //         .elementAt(index), docId: '${sessionId}_$programId').listen((event) {
+                          //   print("${event.subjectPercentage}");
+                          //  subjectPercentage = event.subjectPercentage;
+                          // }).;
                           return Opacity(
                             opacity: scale,
                             child: Transform(
@@ -257,6 +264,7 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
     );
   }
 
+
   Widget getTileCard(double _height,
       {dynamic subjectName,
       dynamic subjectId,
@@ -264,159 +272,171 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
       dynamic reportCardDocId,
       AccountProvider parent,
       int index}) {
+
     return Padding(
       padding: EdgeInsets.fromLTRB(25, _height * 0.01, 25, 0),
-      child: ExpansionTileCard(
-        // key: stCard,
-        animateTrailing: true,
-        shadowColor: CustomColors.darkGreenColor,
-        duration: Duration(seconds: 1),
-        elevation: 2.0,
+      child: StreamBuilder<ReportCardModel>(
+        stream: parent.reportCardStream(
+              subjectId: subjectId, docId: reportCardDocId),
+        builder: (context,snapshot){
+          if(!snapshot.hasData)
+            {
+              return getTempExpansionTile(_height);
+            }
+          else
+            {
+              return ExpansionTileCard(
+                // key: stCard,
+                animateTrailing: true,
+                shadowColor: CustomColors.darkGreenColor,
+                duration: Duration(milliseconds: 500),
+                elevation: 2.0,
 
-        elevationCurve: Curves.bounceOut,
-        heightFactorCurve: Curves.easeInOut,
-        contentPadding: EdgeInsets.all(7.0),
-        leading: CircleAvatar(
-          radius: _height * 0.035,
-          backgroundColor: Colors.black,
-          child: CircleAvatar(
-            radius: _height * 0.032,
-            backgroundColor: Colors.white,
-            child: parent.subjectsIcons.isEmpty
-                ? Helper.CIndicator()
-                : parent.subjectsIcons.length < (index + 1)
-                    ? Helper.CIndicator()
-                    : parent.subjectsIcons[index] == null
-                        ? Icon(
-                            Icons.error_outline,
-                            color: Colors.red,
-                          )
+                elevationCurve: Curves.bounceOut,
+                heightFactorCurve: Curves.easeInOut,
+                contentPadding: EdgeInsets.all(7.0),
+                leading: CircleAvatar(
+                  radius: _height * 0.035,
+                  backgroundColor: Colors.black,
+                  child: CircleAvatar(
+                    radius: _height * 0.032,
+                    backgroundColor: Colors.white,
+                    child: parent.subjectsIcons.isEmpty
+                        ? Helper.CIndicator()
+                        : parent.subjectsIcons.length < (index + 1)
+                        ? Helper.CIndicator()
+                        : parent.subjectsIcons[index] == null
+                        ? Image.asset('assets/subject-icon.png')
                         : Image.network(parent.subjectsIcons[index] ?? ""),
-          ),
-        ),
-        title: Row(
-          children: [
-            Text(
-              subjectName,
-              style: TextStyle(
-                  fontSize: _height * 0.028,
-                  color: CustomColors.darkGreenColor),
-            ),
-            Spacer(),
-            Helper.text(
-                value: '$totalMarks',
-                fSize: _height * 0.027,
-                fWeight: FontWeight.w400),
-            Helper.text(value: '/', fSize: 17.0),
-            Helper.text(value: '100', fSize: _height * 0.017),
-          ],
-        ),
-        // subtitle: Padding(
-        //   padding: EdgeInsets.only(top: 2.0),
-        //   child: Row(
-        //     children: [
-        //       Helper.text(value: 'Semester 1', fSize: _height * 0.022),
-        //       Spacer(
-        //         flex: 3,
-        //       ),
-        //       Helper.text(
-        //           value: 'A', fSize: _height * 0.028, fWeight: FontWeight.bold),
-        //       Spacer()
-        //     ],
-        //   ),
-        // ),
+                  ),
+                ),
+                title: Row(
+                  children: [
+                    Text(
+                      subjectName,
+                      style: TextStyle(
+                          fontSize: _height * 0.028,
+                          color: CustomColors.darkGreenColor),
+                    ),
+                    Spacer(),
+                    Helper.text(
+                        value: '${snapshot.data.subjectPercentage}%',
+                        fSize: _height * 0.027,
+                        fWeight: FontWeight.w400),
+                    // Helper.text(value: '/', fSize: 17.0),
+                    // Helper.text(value: '100', fSize: _height * 0.017),
+                  ],
+                ),
+                // subtitle: Padding(
+                //   padding: EdgeInsets.only(top: 2.0),
+                //   child: Row(
+                //     children: [
+                //       Helper.text(value: 'Semester 1', fSize: _height * 0.022),
+                //       Spacer(
+                //         flex: 3,
+                //       ),
+                //       Helper.text(
+                //           value: 'A', fSize: _height * 0.028, fWeight: FontWeight.bold),
+                //       Spacer()
+                //     ],
+                //   ),
+                // ),
 
-        trailing: Padding(
-            padding: EdgeInsets.only(top: 40.0),
-            child: Icon(Icons.keyboard_arrow_down_outlined)),
-        // trailing: SizedBox(
-        //   child: Column(
-        //     children: [
-        //       Wrap(
-        //         children: [
-        //           Helper.text(
-        //               value: '90',
-        //               fSize: 25.0,
-        //               fWeight: FontWeight.bold),
-        //           Helper.text(value: '/', fSize: 16.0),
-        //           Helper.text(value: '100', fSize: 16.0),
-        //         ],
-        //       ),
-        //       Helper.text(
-        //           value: 'A', fSize: 20.0, fWeight: FontWeight.bold),
-        //     ],
-        //   ),
-        // ),
-        children: <Widget>[
-          getUpperRow(
-            text1: 'Session',
-            text2: 'Grade',
-            text3: 'Score',
-            cInd: 0,
-          ),
-          Divider(
-            thickness: 1.0,
-            height: 1.0,
-            color: Colors.grey,
-          ),
-          StreamBuilder<ReportCardModel>(
-              stream: parent.reportCardStream(
-                  subjectId: subjectId, docId: reportCardDocId),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return getUpperRow(
-                      text1: '.. ..',
-                      text2: '..',
-                      text3: '.. .',
-                      cInd: 1,
-                      bottom: false);
-                } else {
-                  print(
-                      "****** Subject Per --> (${snapshot.data.subjectPercentage ?? 'null'})");
-                  return Container(
-                    // height: _height * 0.1,
-                    child: SingleChildScrollView(
-                        child: Column(
-                            children: List.generate(
-                                snapshot.data.duration.length, (index) {
-                      if (index < snapshot.data.duration.length - 1) {
-                        return getUpperRow(
-                          text1:
-                              '${snapshot.data.duration[index].durationTitle}',
-                          text2: snapshot.data.duration[index].grading
-                              .percentageGrade.grade,
-                          text3:
-                              '${snapshot.data.duration[index].grading.percentageGrade.percentage}%',
-                          cInd: 1,
-                        );
-                      } else {
-                        return getUpperRow(
-                            text1:
-                                '${snapshot.data.duration[index].durationTitle}',
-                            text2:
-                                '${snapshot.data.duration[index].grading.percentageGrade.grade}',
-                            text3:
-                                '${snapshot.data.duration[index].grading.percentageGrade.percentage}%',
-                            cInd: 1,
-                            bottom: false);
-                      }
-                    }))),
-                  );
-                }
-              }),
-          // getUpperRow(
-          //   text1: 'Quarter 1',
-          //   text2: 'A',
-          //   text3: '92/100',
-          //   cInd: 1,
-          // ),
-          // getUpperRow(
-          //     text1: 'Quarter 2',
-          //     text2: 'A',
-          //     text3: '89/100',
-          //     cInd: 1,
-          //     bottom: false),
-        ],
+                trailing: Padding(
+                    padding: EdgeInsets.only(top: 40.0),
+                    child: Icon(Icons.keyboard_arrow_down_outlined)),
+                // trailing: SizedBox(
+                //   child: Column(
+                //     children: [
+                //       Wrap(
+                //         children: [
+                //           Helper.text(
+                //               value: '90',
+                //               fSize: 25.0,
+                //               fWeight: FontWeight.bold),
+                //           Helper.text(value: '/', fSize: 16.0),
+                //           Helper.text(value: '100', fSize: 16.0),
+                //         ],
+                //       ),
+                //       Helper.text(
+                //           value: 'A', fSize: 20.0, fWeight: FontWeight.bold),
+                //     ],
+                //   ),
+                // ),
+                children: <Widget>[
+                  getUpperRow(
+                    text1: 'Duration',
+                    text2: 'Grade',
+                    text3: 'Score',
+                    cInd: 0,
+                  ),
+                  Divider(
+                    thickness: 1.0,
+                    height: 1.0,
+                    color: Colors.grey,
+                  ),
+                  // StreamBuilder<ReportCardModel>(
+                  //     stream: parent.reportCardStream(
+                  //         subjectId: subjectId, docId: reportCardDocId),
+                  //     builder: (context, snapshot) {
+                  //       if (!snapshot.hasData) {
+                  //         return getUpperRow(
+                  //             text1: '.. ..',
+                  //             text2: '..',
+                  //             text3: '.. .',
+                  //             cInd: 1,
+                  //             bottom: false);
+                  //       } else {
+                         // return
+                    Container(
+                            // height: _height * 0.1,
+                            child: SingleChildScrollView(
+                                child: Column(
+                                    children: List.generate(
+                                        snapshot.data.duration.length, (index) {
+                                      if (index < snapshot.data.duration.length - 1) {
+                                        return getUpperRow(
+                                          text1:
+                                          '${snapshot.data.duration[index].durationTitle}',
+                                          text2: snapshot.data.duration[index].grading
+                                              .percentageGrade.grade,
+                                          text3:
+                                          '${snapshot.data.duration[index].grading.percentageGrade.percentage}%',
+                                          cInd: 1,
+                                        );
+                                      } else {
+                                        return getUpperRow(
+                                            text1:
+                                            '${snapshot.data.duration[index].durationTitle}',
+                                            text2:
+                                            '${snapshot.data.duration[index].grading.percentageGrade.grade}',
+                                            text3:
+                                            '${snapshot.data.duration[index].grading.percentageGrade.percentage}%',
+                                            cInd: 1,
+                                            bottom: false);
+                                      }
+                                    }))),
+                          )
+                 //       }
+                     // }
+                      //),
+
+                  // getUpperRow(
+                  //   text1: 'Quarter 1',
+                  //   text2: 'A',
+                  //   text3: '92/100',
+                  //   cInd: 1,
+                  // ),
+                  // getUpperRow(
+                  //     text1: 'Quarter 2',
+                  //     text2: 'A',
+                  //     text3: '89/100',
+                  //     cInd: 1,
+                  //     bottom: false),
+                ],
+              );
+            }
+        },
       ),
     );
   }
@@ -578,6 +598,66 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
       //     ),
       //   )
       // ],
+    );
+  }
+
+  Widget getTempExpansionTile(double _height) {
+    return ExpansionTileCard(
+      // key: stCard,
+      animateTrailing: true,
+      shadowColor: CustomColors.darkGreenColor,
+      duration: Duration(milliseconds: 500),
+      elevation: 2.0,
+
+      elevationCurve: Curves.bounceOut,
+      heightFactorCurve: Curves.easeInOut,
+      contentPadding: EdgeInsets.all(7.0),
+      leading: CircleAvatar(
+        radius: _height * 0.035,
+        backgroundColor: Colors.black,
+        child: CircleAvatar(
+          radius: _height * 0.032,
+          backgroundColor: Colors.white,
+        ),
+      ),
+      title: Row(
+        children: [
+          Text(
+            '.....',
+            style: TextStyle(
+                fontSize: _height * 0.028,
+                color: CustomColors.darkGreenColor),
+          ),
+          Spacer(),
+          Helper.text(
+              value: '.. ..',
+              fSize: _height * 0.027,
+              fWeight: FontWeight.w400),
+        ],
+      ),
+
+      trailing: Padding(
+          padding: EdgeInsets.only(top: 40.0),
+          child: Icon(Icons.keyboard_arrow_down_outlined)),
+      children: <Widget>[
+        getUpperRow(
+          text1: 'Session',
+          text2: 'Grade',
+          text3: 'Score',
+          cInd: 0,
+        ),
+        Divider(
+          thickness: 1.0,
+          height: 1.0,
+          color: Colors.grey,
+        ),
+        getUpperRow(
+            text1: '.. ..',
+            text2: '..',
+            text3: '.. .',
+            cInd: 1,
+            bottom: false)
+      ],
     );
   }
 }
