@@ -8,6 +8,9 @@ class Helper {
     return DateFormat.yMMMd().format(date).toString();
   }
 
+  static String timeFormat(DateTime date) =>
+      DateFormat("h:mma").format(date).toString();
+
   static text(
       {dynamic value,
       double fSize = 0.0,

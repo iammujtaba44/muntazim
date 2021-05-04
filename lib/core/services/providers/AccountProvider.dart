@@ -419,6 +419,7 @@ class AccountProvider with ChangeNotifier {
                 print(element.data());
                 announcementList.add(element.data());
               }
+              // if (!primary) notifyListeners();
             } catch (e) {
               print("error4 --> ${e.toString()}");
             }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:muntazim/core/plugins.dart';
 import 'package:muntazim/utils/CustomColors.dart';
 import 'package:muntazim/utils/Helper.dart';
@@ -201,12 +202,12 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
             Helper.text(
                 value: data['sent_date'] == null
                     ? "00-00-0000"
-                    : '${Helper.dateFormat(DateTime.tryParse(data['sent_date'].toString().split(' ')[0])) ?? "00-00-0000"}',
+                    : '${Helper.dateFormat(DateTime.tryParse(data['sent_date'])) ?? "00-00-0000"}',
                 fSize: height * 0.02),
             Helper.text(
                 value: data['sent_date'] == null
                     ? "00-00"
-                    : '${data['sent_date'].toString().split(' ')[1] ?? "00-00"}',
+                    : '${Helper.timeFormat(DateTime.tryParse(data['sent_date'])) ?? "00-00"}',
                 fSize: height * 0.02)
           ])
         ]),
@@ -237,12 +238,12 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                         Helper.text(
                             value: data['sent_date'] == null
                                 ? "00-00-0000"
-                                : '${data['sent_date'].toString().split(' ')[0] ?? "00-00-0000"}',
+                                : '${Helper.dateFormat(DateTime.tryParse(data['sent_date'])) ?? "00-00-0000"}',
                             fSize: height * 0.02),
                         Helper.text(
                             value: data['sent_date'] == null
                                 ? "00-00"
-                                : '${data['sent_date'].toString().split(' ')[1] ?? "00-00"}',
+                                : '${Helper.timeFormat(DateTime.tryParse(data['sent_date'])) ?? "00-00"}',
                             fSize: height * 0.02)
                       ]),
                   secondButton: InkWell(
