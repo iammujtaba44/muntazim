@@ -57,16 +57,19 @@ class Helper {
         backgroundColor: CustomColors.buttonDarkBlueColor);
   }
 
-  static myHeader({dynamic text, double height}) {
+  static myHeader({dynamic text, double height ,Function onTap ,bool isDrawerOpen = false}) {
     return Align(
       alignment: Alignment.topCenter,
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 20, vertical: height * 0.07),
-        child: Row(
+        child: isDrawerOpen? Container():Row(
           children: [
-            Icon(
-              Icons.menu_rounded,
-              color: Colors.white,
+            InkWell(
+              onTap: onTap,
+              child: Icon(
+                Icons.menu_rounded,
+                color: Colors.white,
+              ),
             ),
             Spacer(),
             Text(

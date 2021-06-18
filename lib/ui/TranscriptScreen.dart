@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:muntazim/core/plugins.dart';
 import 'package:muntazim/core/services/models/ReportCardModel.dart';
@@ -16,12 +18,18 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
   double topContainer = 0;
 
   String student = '';
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   var school;
   bool isLoading = true;
   var sessionId;
 
   var programId;
+  DrawerService _drawerService;
+  bool isDrawerOpen = false;
+  StreamController _drawerController = StreamController<bool>.broadcast();
+
+
   void initState() {
     var parent = Provider.of<AccountProvider>(context, listen: false);
     super.initState();
@@ -38,8 +46,20 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
         closeTopContainer = controller.offset > 50;
       });
     });
-  }
+    _drawerController.add(false);
+    _drawerService = Provider.of(context, listen: false);
+    _listenDrawerService();
+    Future.delayed(Duration(milliseconds: 200),(){
+      _drawerController.sink.add(true);
+    });
 
+  }
+  _listenDrawerService() {
+    _drawerService.status.listen((status) {
+      isDrawerOpen = status;
+      _drawerController.sink.add(true);
+    });
+  }
   @override
   Widget build(BuildContext context) {
     final _height = MediaQuery.of(context).size.height;
@@ -51,6 +71,8 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
     return Stack(
       children: [
         Scaffold(
+          key: _scaffoldKey,
+          drawer: DrawerView(),
           appBar: myAppBar(_height, parent: parent),
           backgroundColor: CustomColors.lightBackgroundColor,
           body: !isLoading
@@ -259,7 +281,26 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
           //   ),
           // ),
         ),
-        Helper.myHeader(text: 'TRANSCRIPT', height: _height),
+        StreamBuilder(
+            stream: _drawerController.stream,
+            builder: (context,drawerShot){
+              if(!drawerShot.hasData)
+                return Center();
+              else
+              {
+                return Helper.myHeader(
+                    text: 'Report Card',
+                    height: _height,
+                    isDrawerOpen: this.isDrawerOpen,
+                    onTap: () {
+                      _scaffoldKey.currentState.openDrawer();
+
+                    });
+              }
+            })
+        // Helper.myHeader(text: 'Report Card', height: _height,onTap: (){
+        //   _scaffoldKey.currentState.openDrawer();
+        // }),
       ],
     );
   }
@@ -483,6 +524,7 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
       // leading: Padding(
       //     padding: EdgeInsets.only(left: _height * 0.015, bottom: 50.0),
       //     child: Icon(Icons.menu_rounded)),
+      automaticallyImplyLeading: false,
       leadingWidth: _height * 0.03,
       title: Padding(
         padding: EdgeInsets.only(bottom: 50.0),
@@ -496,11 +538,12 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
               child: CircleAvatar(
                 radius: _height * 0.022,
                 backgroundColor: Colors.white,
-                child: Icon(
-                  Icons.person,
-                  color: CustomColors.darkGreenColor,
-                  size: _height * 0.022,
-                ),
+                backgroundImage: AssetImage('assets/user_avatar.png'),
+                // child: Icon(
+                //   Icons.person,
+                //   color: CustomColors.darkGreenColor,
+                //   size: _height * 0.022,
+                // ),
               ),
             ),
             SizedBox(

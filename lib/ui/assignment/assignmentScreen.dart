@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:muntazim/core/plugins.dart';
 import 'package:muntazim/ui/assignment/AssignmentDetail.dart';
 import 'package:muntazim/utils/CustomColors.dart';
@@ -20,7 +21,9 @@ class _AssignmnetScreenState extends State<AssignmnetScreen> {
 
   var schoolId;
   String schoolIdName;
-  StreamController<bool> dataController = StreamController<bool>.broadcast();
+  StreamController _dataController = StreamController<bool>.broadcast();
+  StreamController _mainController = StreamController<int>.broadcast();
+
   PermissionService _permissionService = PermissionService();
   List<bool> tileExpansion = List<bool>.filled(4, false);
   bool tileExpansion1 = true,
@@ -38,17 +41,47 @@ class _AssignmnetScreenState extends State<AssignmnetScreen> {
   String monthId;
   String academicYearName = "";
   String attendancePercentage = "";
+String schoolName = "";
+  DrawerService _drawerService;
+  bool isDrawerOpen = false;
+  StreamController _drawerController = StreamController<bool>.broadcast();
+
 
   @override
   void initState() {
     var parent = Provider.of<AccountProvider>(context, listen: false);
     super.initState();
-
+    _dataController.add(false);
+    _mainController.add(0);
     student = parent.studentName;
     this.sessionId = parent.sessionId;
     this.school = parent.schoolId;
     this.programId = parent.programId;
     this.subjectId = parent.subjectId;
+    if (mounted) {
+      Future.delayed(Duration(seconds: 2), () {
+        setState(() {
+          this.schoolName = parent.schoolList[0]['school_name'];
+          this.academicYearName = parent.schoolYearList[0]['short_name'] ??
+              parent.schoolYearList[0]['school_year'];
+        });
+        _dataController.sink.add(true);
+        _mainController.sink.add(1);
+      });
+    }
+    _drawerController.add(false);
+    _drawerService = Provider.of(context, listen: false);
+    _listenDrawerService();
+    Future.delayed(Duration(milliseconds: 200),(){
+      _drawerController.sink.add(true);
+    });
+
+  }
+  _listenDrawerService() {
+    _drawerService.status.listen((status) {
+      isDrawerOpen = status;
+      _drawerController.sink.add(true);
+    });
   }
 
   @override
@@ -61,179 +94,225 @@ class _AssignmnetScreenState extends State<AssignmnetScreen> {
       children: [
         Scaffold(
           key: _scaffoldKey,
+          drawer: DrawerView(),
           appBar: myAppBar(_height, parent),
           backgroundColor: CustomColors.lightBackgroundColor,
           body: Padding(
             padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
-            child: SingleChildScrollView(
-              physics: BouncingScrollPhysics(),
-              child: Container(
-                  child: Column(
-                children: [
-                  Row(
-                    children: [
-                      InkWell(
-                        splashColor:
-                            CustomColors.darkBackgroundColor.withOpacity(0.5),
-                        onTap: () {
-                          this.animatedAlertBox(
-                              height: _height, parent: parent);
-                        },
+            child: StreamBuilder<int>(
+              stream: _mainController.stream,
+              builder: (context,mainSnapshot){
+                if(!mainSnapshot.hasData)
+                  return Center(child: Helper.CIndicator());
+                else
+                  {
+                    if(mainSnapshot.data == 0)
+                      return Center(child: Helper.CIndicator());
+                    else {
+                      return SingleChildScrollView(
+                        physics: BouncingScrollPhysics(),
                         child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              //    borderRadius: BorderRadius.all(Radius.circular(1000))
-                            ),
-                            margin: EdgeInsets.only(bottom: 2),
-                            padding: EdgeInsets.all(14),
-                            child: Icon(
-                              Icons.person_search,
-                              color: CustomColors.darkGreenColor,
-                            )),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5.0))),
-                          margin: EdgeInsets.only(left: 15, bottom: 2),
-                          padding: EdgeInsets.only(
-                            left: 15,
-                            right: 15,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Expanded(
-                                child: DropdownButtonHideUnderline(
-                                  child: ButtonTheme(
-                                    alignedDropdown: true,
-                                    child: DropdownButton<String>(
-                                      value: subjectId,
-                                      iconSize: 30,
-                                      icon: (null),
-                                      style: TextStyle(
-                                        color: CustomColors.darkGreenColor,
-                                        fontSize: 16,
-                                      ),
-                                      hint: Text('Select Subject'),
-                                      onChanged: (String newValue) {
-                                        setState(() {
-                                          subjectId = newValue;
-                                          this.monthId = null;
-                                        });
-                                        parent.getMonths(
-                                            schoolId1: this.school,
-                                            sessionId1: this.sessionId,
-                                            programId1: this.programId,
-                                            subjectId: subjectId);
-                                        Future.delayed(
-                                            Duration(milliseconds: 500), () {
-                                          setState(() {});
-                                        });
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    InkWell(
+                                      splashColor:
+                                      CustomColors.darkBackgroundColor.withOpacity(0.5),
+                                      onTap: () {
+                                        this.animatedAlertBox(
+                                            height: _height, parent: parent);
                                       },
-                                      items: parent.studentSubjects.values
-                                              ?.map((item) {
-                                            return new DropdownMenuItem(
-                                              child: new Text(item),
-                                              value: item.toString(),
-                                            );
-                                          })?.toList() ??
-                                          [],
+                                      child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                            //    borderRadius: BorderRadius.all(Radius.circular(1000))
+                                          ),
+                                          margin: EdgeInsets.only(bottom: 2),
+                                          padding: EdgeInsets.all(14),
+                                          child: Icon(
+                                            Icons.person_search,
+                                            color: CustomColors.darkGreenColor,
+                                          )),
                                     ),
-                                  ),
+                                    Expanded(
+                                      flex: 3,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                            BorderRadius.all(Radius.circular(5.0))),
+                                        margin: EdgeInsets.only(left: 15, bottom: 2),
+                                        padding: EdgeInsets.only(
+                                          left: 15,
+                                          right: 15,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            Expanded(
+                                              child: DropdownButtonHideUnderline(
+                                                child: ButtonTheme(
+                                                  alignedDropdown: true,
+                                                  child: DropdownButton<String>(
+                                                    value: subjectId,
+                                                    iconSize: 30,
+                                                    icon: (null),
+                                                    style: TextStyle(
+                                                      color: CustomColors.darkGreenColor,
+                                                      fontSize: 16,
+                                                    ),
+                                                    hint: Text('Select Subject'),
+                                                    onChanged: (String newValue) {
+                                                      setState(() {
+                                                        subjectId = newValue;
+                                                      });
+                                                      parent.getAssignments(
+                                                          subjectId: this.subjectId,
+                                                          programId1: this.programId,
+                                                          schoolId1: this.school,
+                                                          sessionId1: this.sessionId);
+
+                                                      Future.delayed(
+                                                          Duration(milliseconds: 1000), () {
+                                                        setState(() {});
+                                                      });
+                                                    },
+                                                    items: parent.studentSubjects.values
+                                                        ?.map((item) {
+                                                      return new DropdownMenuItem(
+                                                        child: new Text(item),
+                                                        value: item.toString(),
+                                                      );
+                                                    })?.toList() ??
+                                                        [],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                  bodyWidget(
-                      height: _height,
-                      tileTitle: 'Due',
-                      widgetChild:
-                          assignmentData(height: _height), //_mylistview2(),
-                      initiallyExpanded: tileExpansion1,
-                      tileExpansionM: tileExpansion1,
-                      onChange: (bool ex) {
-                        setState(() {
-                          if (ex) {
-                            tileExpansion1 = true;
-                            tileExpansion2 = false;
-                            // tileExpansion[0] = ex;
-                            // tileExpansion[1] = !ex;
-                            // tileExpansion[2] = !ex;
-                            // tileExpansion[3] = !ex;
-                          } else
-                            tileExpansion1 = false;
-                        });
+                                parent.assignmentList.length == 0? Padding(
+                                  padding: EdgeInsets.only(top:_height*0.2),
+                                  child: Helper.text(value: "No Assignment found",fSize: _height*0.03,fColor: Colors.grey),): Center(),
+                                // mainSnapshot.data == 2? Padding(
+                                //   padding: EdgeInsets.only(top:_height*0.08),
+                                //   child: Helper.CIndicator(),
+                                // ):Center(),
+                                SizedBox(
+                                  height: _height * 0.005,
+                                ),
+                                parent.dueAssignmentList.length > 0? bodyWidget(
+                                    height: _height,
+                                    tileTitle: 'Due',
+                                    widgetChild:
+                                    assignmentData(height: _height,dataList: parent.dueAssignmentDetails, status: 1,parent: parent), //_mylistview2(),
+                                    initiallyExpanded: tileExpansion1,
+                                    tileExpansionM: tileExpansion1,
+                                    onChange: (bool ex) {
+                                      setState(() {
+                                        if (ex) {
+                                          tileExpansion1 = true;
+                                          tileExpansion2 = false;
+                                          // tileExpansion[0] = ex;
+                                          // tileExpansion[1] = !ex;
+                                          // tileExpansion[2] = !ex;
+                                          // tileExpansion[3] = !ex;
+                                        } else
+                                          tileExpansion1 = false;
+                                      });
 
-                        print(tileExpansion);
-                      }),
-                  SizedBox(
-                    height: _height * 0.005,
-                  ),
-                  bodyWidget(
-                      height: _height,
-                      tileTitle: 'Graded',
-                      widgetChild:
-                          assignmentData(height: _height), //_mylistview2(),
-                      tileExpansionM: tileExpansion2,
-                      initiallyExpanded: tileExpansion2,
-                      onChange: (bool ex) {
-                        setState(() {
-                          if (ex) {
-                            tileExpansion1 = false;
-                            tileExpansion2 = true;
-                            // tileExpansion[0] = !ex;
-                            // tileExpansion[1] = ex;
-                            // tileExpansion[2] = !ex;
-                            // tileExpansion[3] = !ex;
+                                      print(tileExpansion);
+                                    }): Center(),
+                                SizedBox(
+                                  height: _height * 0.005,
+                                ),
+                                parent.submittedAssignmentList.length > 0?  bodyWidget(
+                                    height: _height,
+                                    tileTitle: 'Submitted',
+                                    widgetChild:
+                                    assignmentData(height: _height,dataList: parent.submittedAssignmentDetails, status: 2,parent: parent), //_mylistview2(),
+                                    tileExpansionM: tileExpansion2,
+                                    initiallyExpanded: tileExpansion2,
+                                    onChange: (bool ex) {
+                                      setState(() {
+                                        if (ex) {
+                                          tileExpansion1 = false;
+                                          tileExpansion2 = true;
+                                          // tileExpansion[0] = !ex;
+                                          // tileExpansion[1] = ex;
+                                          // tileExpansion[2] = !ex;
+                                          // tileExpansion[3] = !ex;
 
-                          } else
-                            tileExpansion2 = false;
-                        });
+                                        } else
+                                          tileExpansion2 = false;
+                                      });
 
-                        print(tileExpansion);
-                      }),
-                  SizedBox(
-                    height: _height * 0.005,
-                  ),
-                  bodyWidget(
-                      height: _height,
-                      tileTitle: 'Canceled',
-                      widgetChild:
-                          assignmentData(height: _height), //_mylistview2(),
-                      tileExpansionM: tileExpansion3,
-                      initiallyExpanded: tileExpansion3,
-                      onChange: (bool ex) {
-                        setState(() {
-                          if (ex) {
-                            tileExpansion1 = false;
-                            tileExpansion2 = false;
-                            tileExpansion3 = true;
-                            // tileExpansion[0] = !ex;
-                            // tileExpansion[1] = ex;
-                            // tileExpansion[2] = !ex;
-                            // tileExpansion[3] = !ex;
+                                      print(tileExpansion);
+                                    }): Center(),
+                                SizedBox(
+                                  height: _height * 0.005,
+                                ),
+                                parent.gradedAssignmentList.length > 0?  bodyWidget(
+                                    height: _height,
+                                    tileTitle: 'Graded',
+                                    widgetChild:
+                                    assignmentData(height: _height,dataList: parent.gradedAssignmentDetails, status: 3,parent: parent), //_mylistview2(),
+                                    tileExpansionM: tileExpansion3,
+                                    initiallyExpanded: tileExpansion3,
+                                    onChange: (bool ex) {
+                                      setState(() {
+                                        if (ex) {
+                                          tileExpansion1 = false;
+                                          tileExpansion2 = false;
+                                          tileExpansion3 = true;
+                                          // tileExpansion[0] = !ex;
+                                          // tileExpansion[1] = ex;
+                                          // tileExpansion[2] = !ex;
+                                          // tileExpansion[3] = !ex;
 
-                          } else
-                            tileExpansion3 = false;
-                        });
+                                        } else
+                                          tileExpansion3 = false;
+                                      });
 
-                        print(tileExpansion);
-                      })
-                ],
-              )),
+                                      print(tileExpansion);
+                                    }) : Center()
+                              ],
+                            )),
+                      );
+
+                    }
+                  }
+
+              },
             ),
           ),
         ),
-        Helper.myHeader(text: 'Assignments', height: _height),
+        StreamBuilder(
+            stream: _drawerController.stream,
+            builder: (context,drawerShot){
+              if(!drawerShot.hasData)
+                return Center();
+              else
+              {
+                return Helper.myHeader(
+                    text: 'Assignments',
+                    height: _height,
+                    isDrawerOpen: this.isDrawerOpen,
+                    onTap: () {
+                      _scaffoldKey.currentState.openDrawer();
+
+                    });
+              }
+            })
+        // Helper.myHeader(text: 'Assignments', height: _height,onTap: (){
+        //   _scaffoldKey.currentState.openDrawer();
+        // }),
       ],
     );
   }
@@ -268,7 +347,7 @@ class _AssignmnetScreenState extends State<AssignmnetScreen> {
                     child: SizedBox(
                         //height: 30.0,
                         child: Wrap(
-                      spacing: height * 0.1,
+                      spacing: height * 0.08,
                       children: <Widget>[
                         Helper.text(
                             value: "Title",
@@ -309,41 +388,71 @@ class _AssignmnetScreenState extends State<AssignmnetScreen> {
     );
   }
 
-  Widget assignmentData({double height}) {
+  Widget assignmentData({double height , List dataList, int status , AccountProvider parent}) {
     return Column(
       children: List.generate(
-          5,
+          dataList.length,
           (index) => Wrap(
                 children: <Widget>[
                   ListTile(
-                    title: Wrap(
-                      spacing: height * 0.06,
+                    tileColor: status == 2? parent.submittedAssignmentList[index]['status'] == AppConstants.ADUEDATE? Colors.red : Colors.white : Colors.white,
+                    title: Row(
+                     // spacing: height * 0.05,
+                      //spacing: height * 0.08,
+
                       children: <Widget>[
-                        //   Text("Assignment ${index}"),
-                        //   Text("0${index}/01/2020"),
+                        ConstrainedBox(constraints: BoxConstraints(maxWidth: 80.0),
+                        child:   Helper.text(
+                            value: '${dataList[index]['assignment_title']}', fSize: height * 0.02,
+                        fColor: status == 2? parent.submittedAssignmentList[index]['status'] == AppConstants.ADUEDATE? Colors.white : CustomColors.darkGreenColor : CustomColors.darkGreenColor),
+
+                        ),
+                        Spacer(),
                         Helper.text(
-                            value: 'Assignment ${index}', fSize: height * 0.02),
-                        Helper.text(
-                            value: '0${index}/01/2020', fSize: height * 0.02),
+                            value: '${dataList[index]['assignment_date']}', fSize: height * 0.02,
+
+                            fColor: status == 2? parent.submittedAssignmentList[index]['status'] == AppConstants.ADUEDATE? Colors.white : CustomColors.darkGreenColor : CustomColors.darkGreenColor),
+                        Spacer(),
+                        InkWell(
+                          onTap: () {
+                           // print(dataList[index]);
+                           // print(parent.gradedAssignmentList[index]);
+                            parent.changeDetailStatus(status: status,index: index);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        BottomBarNavigationPatternExample(
+                                          screenIndex: 5,
+                                        )));
+                          },
+                          child: Helper.text(
+                              value: 'Details',
+                              fSize: height * 0.02,
+                              tDecoration: TextDecoration.underline,
+                              fColor: status == 2? parent.submittedAssignmentList[index]['status'] == AppConstants.ADUEDATE? Colors.white : CustomColors.buttonDarkBlueColor : CustomColors.buttonDarkBlueColor),
+                        ),
+
+
                         //  Helper.text(value: 'View Details',fSize: height*0.017)
                       ],
                     ),
-                    trailing: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                    BottomBarNavigationPatternExample(
-                                      screenIndex: 5,
-                                    )));
-                      },
-                      child: Helper.text(
-                          value: 'Details',
-                          fSize: height * 0.02,
-                          tDecoration: TextDecoration.underline,
-                          fColor: CustomColors.buttonDarkBlueColor),
-                    ),
+                    // trailing: InkWell(
+                    //   onTap: () {
+                    //     Navigator.push(
+                    //         context,
+                    //         MaterialPageRoute(
+                    //             builder: (_) =>
+                    //                 BottomBarNavigationPatternExample(
+                    //                   screenIndex: 5,
+                    //                 )));
+                    //   },
+                    //   child: Helper.text(
+                    //       value: 'Details',
+                    //       fSize: height * 0.02,
+                    //       tDecoration: TextDecoration.underline,
+                    //       fColor: CustomColors.buttonDarkBlueColor),
+                    // ),
                     // trailing: Wrap(
                     //   spacing: 10,
                     //   children: <Widget>[
@@ -473,16 +582,21 @@ class _AssignmnetScreenState extends State<AssignmnetScreen> {
                                           ),
                                           hint: Text('Select School'),
                                           onChanged: (String newValue) {
-                                            print(newValue);
+                                            _mainController.sink.add(2);
+                                            List temp = List.from(parent
+                                                .schoolList
+                                                .where((element) =>
+                                            element['school_id']
+                                                .toString() ==
+                                                newValue));
                                             boxState(() {
                                               school = newValue;
                                               this.sessionId = null;
                                               this.programId = null;
                                               this.monthId = null;
                                               this.subjectId = null;
-                                              //   print(school);
+                                              this.schoolName = temp[0]['school_name'];
                                             });
-                                            // parent.clearSubjectList();
                                             parent.getSessions(
                                                 schoolId: school);
                                           },
@@ -497,9 +611,9 @@ class _AssignmnetScreenState extends State<AssignmnetScreen> {
                                                             item['school_name']
                                                                         .length >
                                                                     12
-                                                                ? height * 0.023
+                                                                ? height * 0.021
                                                                 : height *
-                                                                    0.025),
+                                                                    0.023),
                                                   ),
                                                   value: item['school_id']
                                                       .toString(),
@@ -583,13 +697,13 @@ class _AssignmnetScreenState extends State<AssignmnetScreen> {
                                                         fontSize: item[
                                                                     'short_name'] !=
                                                                 null
-                                                            ? height * 0.025
+                                                            ? height * 0.023
                                                             : item['school_year']
                                                                         .length >
                                                                     12
-                                                                ? height * 0.023
+                                                                ? height * 0.018
                                                                 : height *
-                                                                    0.025),
+                                                                    0.023),
                                                   ),
                                                   value:
                                                       item['school_session_id']
@@ -655,9 +769,9 @@ class _AssignmnetScreenState extends State<AssignmnetScreen> {
                                                             fontSize: item['program_title']
                                                                         .length >
                                                                     12
-                                                                ? height * 0.023
+                                                                ? height * 0.021
                                                                 : height *
-                                                                    0.025),
+                                                                    0.023),
                                                       ),
                                                       value: item['program_id']
                                                           .toString(),
@@ -706,11 +820,15 @@ class _AssignmnetScreenState extends State<AssignmnetScreen> {
 
                                               print(subjectId);
                                             });
-                                            parent.getMonths(
-                                                schoolId1: this.school,
-                                                sessionId1: this.sessionId,
+
+                                            parent.getAssignments(
+                                                subjectId: this.subjectId,
                                                 programId1: this.programId,
-                                                subjectId: subjectId);
+                                                schoolId1: this.school,
+                                                sessionId1: this.sessionId);
+                                            Future.delayed(Duration(seconds: 1),(){
+                                              _mainController.sink.add(1);
+                                            });
                                           },
                                           items: parent.studentSubjects.values
                                                   ?.map((item) {
@@ -722,8 +840,8 @@ class _AssignmnetScreenState extends State<AssignmnetScreen> {
                                                     style: TextStyle(
                                                         fontSize: item.length >
                                                                 12
-                                                            ? height * 0.023
-                                                            : height * 0.025),
+                                                            ? height * 0.021
+                                                            : height * 0.023),
                                                   ),
                                                   value: item.toString(),
                                                 );
@@ -736,58 +854,6 @@ class _AssignmnetScreenState extends State<AssignmnetScreen> {
                                 ],
                               ),
                             ),
-                            // Container(
-                            //   decoration: BoxDecoration(
-                            //       color: Colors.white,
-                            //       borderRadius:
-                            //       BorderRadius.all(Radius.circular(5.0))),
-                            //   margin: EdgeInsets.only(
-                            //       left: 15.0, right: 15.0, top: 2.0),
-                            //   padding: EdgeInsets.only(
-                            //     left: 15,
-                            //     right: 15,
-                            //   ),
-                            //   child: Row(
-                            //     mainAxisAlignment:
-                            //     MainAxisAlignment.spaceBetween,
-                            //     children: <Widget>[
-                            //       Expanded(
-                            //         child: DropdownButtonHideUnderline(
-                            //           child: ButtonTheme(
-                            //             alignedDropdown: true,
-                            //             child: DropdownButton<String>(
-                            //               value: monthId,
-                            //               iconSize: 30,
-                            //               icon: (null),
-                            //               style: TextStyle(
-                            //                 color: CustomColors.darkGreenColor,
-                            //                 fontSize: 16,
-                            //               ),
-                            //               hint: Text('Select Month'),
-                            //               onChanged: (String newValue) {
-                            //                 setState(() {
-                            //                   monthId = newValue;
-                            //                   print(monthId);
-                            //                 });
-                            //                 // parent.getsubjects(
-                            //                 //     schoolId1: this.school,
-                            //                 //     sessionId1: this.sessionId,
-                            //                 //     programId1: programId);
-                            //               },
-                            //               items: parent.monthsList?.map((item) {
-                            //                 return new DropdownMenuItem(
-                            //                   child: new Text(item),
-                            //                   value: item.toString(),
-                            //                 );
-                            //               })?.toList() ??
-                            //                   [],
-                            //             ),
-                            //           ),
-                            //         ),
-                            //       ),
-                            //     ],
-                            //   ),
-                            // ),
                           ]),
                         ),
                         Row(children: [
@@ -863,6 +929,7 @@ class _AssignmnetScreenState extends State<AssignmnetScreen> {
       // leading: Padding(
       //     padding: EdgeInsets.only(bottom: 50.0),
       //     child: Icon(Icons.menu_rounded)),
+      automaticallyImplyLeading: false,
       title: Padding(
         padding: EdgeInsets.only(bottom: 50.0),
         child: Row(
@@ -875,11 +942,12 @@ class _AssignmnetScreenState extends State<AssignmnetScreen> {
               child: CircleAvatar(
                 radius: _height * 0.022,
                 backgroundColor: Colors.white,
-                child: Icon(
-                  Icons.person,
-                  color: CustomColors.darkGreenColor,
-                  size: _height * 0.022,
-                ),
+                backgroundImage: AssetImage('assets/user_avatar.png'),
+                // child: Icon(
+                //   Icons.person,
+                //   color: CustomColors.darkGreenColor,
+                //   size: _height * 0.022,
+                // ),
               ),
             ),
             SizedBox(
@@ -898,28 +966,35 @@ class _AssignmnetScreenState extends State<AssignmnetScreen> {
                   iconSize: _height * 0.025,
                   dropdownColor: CustomColors.darkBackgroundColor,
                   onChanged: (String newValue) {
-                    this.setState(() {
                       student = newValue;
-                      // this.sessionId = null;
-                      // this.school = null;
-                      // this.programId = null;
-                      // isLoading = false;
-                    });
-                    // parent.studentIdUpdate(valueAt: newValue);
-                    // parent.studentUpdate(isUpdateView: true);
-                    // //   parent.getSchools(type: true);
-                    //
-                    // if (mounted) {
-                    //   Future.delayed(Duration(seconds: 1), () {
-                    //     setState(() {
-                    //       this.sessionId = parent.sessionId;
-                    //       this.school = parent.schoolId;
-                    //       this.programId = parent.programId;
-                    //       isLoading = true;
-                    //     });
-                    //   });
-                    //  print('%%%%% ${parent.monthId}');
-                    // }
+                      this.sessionId = null;
+                      this.school = null;
+                      this.programId = null;
+                      this.subjectId = null;
+                      _mainController.sink.add(0);
+                      _dataController.sink.add(false);
+                      parent.studentIdUpdate(valueAt: newValue);
+                    parent.studentUpdate(isUpdateView: true,assignment: true);
+                    if (mounted) {
+                      Future.delayed(Duration(seconds: 2), () {
+                       // setState(() {
+                          this.sessionId = parent.sessionId;
+                          this.school = parent.schoolId;
+                          this.programId = parent.programId;
+                          this.subjectId = parent.subjectId;
+                          this.academicYearName = parent.schoolYearList[0]
+                          ['short_name'] ??
+                              parent.schoolYearList[0]['school_year'];
+                          this.schoolName = parent.schoolList[0]['school_name'];
+
+                          // this.monthId = parent.monthId;
+                       // });
+                        _mainController.sink.add(1);
+                        _dataController.sink.add(true);
+
+                      });
+                    }
+
                   },
                   //  isExpanded: true,
                   // isDense: true,
@@ -949,24 +1024,69 @@ class _AssignmnetScreenState extends State<AssignmnetScreen> {
           ),
         ),
       ),
-      // actions: [
-      //   Padding(
-      //     padding: EdgeInsets.only(right: 10.0, bottom: 50.0),
-      //     child: CircleAvatar(
-      //       radius: 30.0,
-      //       backgroundColor: CustomColors.darkGreenColor,
-      //       child: CircleAvatar(
-      //         radius: 27.0,
-      //         backgroundColor: Colors.white,
-      //         child: Icon(
-      //           Icons.person,
-      //           color: CustomColors.darkGreenColor,
-      //           size: 40.0,
-      //         ),
-      //       ),
-      //     ),
-      //   )
-      // ],
+      actions: [
+        StreamBuilder<bool>(
+            stream: _dataController.stream,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return Padding(
+                  padding: EdgeInsets.only(right: 15.0, bottom: 10.0),
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [Helper.CIndicator()]),
+                );
+              } else {
+                if(!snapshot.data)
+                  {
+                    return Padding(
+                      padding: EdgeInsets.only(right: 15.0, bottom: 10.0),
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [Helper.CIndicator()]),
+                    );
+                  }
+                else
+                  {
+                    return Padding(
+                      padding: EdgeInsets.only(right: 15.0, bottom: 10.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Helper.text(
+                              value: schoolName ??
+                                  'School', //'Academic Year',
+                              fWeight: FontWeight.bold,
+                              fSize: schoolName.length > 12
+                                  ? _height * 0.018
+                                  : 20.0,
+                              fColor: Colors.white),
+                          Helper.text(
+                              value: academicYearName ??
+                                  'Academic Year', //'Academic Year',
+                              fWeight: FontWeight.bold,
+                              fSize: academicYearName.length > 12
+                                  ? _height * 0.016
+                                  : 20.0,
+                              fColor: Colors.white),
+                          Helper.text(
+                              value:'', //'Academic Year',
+                              fWeight: FontWeight.bold,
+                              fSize: _height * 0.016,
+                              fColor: Colors.white),
+                        ],
+                      ),
+                    );
+
+                  }
+              }
+            }),
+      ],
     );
   }
 }

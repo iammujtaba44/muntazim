@@ -16,7 +16,7 @@ class BottomBarNavigationPatternExample extends StatefulWidget {
       color: CustomColors.darkBackgroundColor, //Colors.indigo,
     ),
     BarItem(
-      text: "Transcript",
+      text: "Report Card",
       iconData: Icons.assignment,
       color: CustomColors.darkBackgroundColor, //Colors.teal,
     ),
@@ -27,7 +27,7 @@ class BottomBarNavigationPatternExample extends StatefulWidget {
     ),
     BarItem(
       text: "Assign.",
-      iconData: Icons.payment,
+      iconData: Icons.assignment_outlined,
       color: CustomColors.darkBackgroundColor, //Colors.pinkAccent,
     ),
     BarItem(
@@ -86,7 +86,7 @@ class _BottomBarNavigationPatternExampleState
             print(index);
             if (index > 0 && index < 4) {
               parent.studentUpdate(
-                  valueAt: 0, attendance: index == 2 ? true : false);
+                  valueAt: parent.indexedStudent, attendance: index == 2 ? true : false, assignment: index == 3? true:false) ;
             }
             setState(() {
               selectedBarIndex = index;

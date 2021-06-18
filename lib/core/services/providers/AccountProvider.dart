@@ -22,17 +22,36 @@ class AccountProvider with ChangeNotifier {
   Map<String, dynamic> monthData = Map();
   var schoolId;
   dynamic attendancePercentage;
-
   var sessionId;
-
   var programId;
   var subjectId;
   var monthId;
-
   List monthsList = List();
   List announcementList = List();
-
+  List assignmentList = List();
+  List gradedAssignmentList = List();
+  List dueAssignmentList = List();
+  List submittedAssignmentList = List();
+  List gradedAssignmentDetails = List();
+  List dueAssignmentDetails = List();
+  List submittedAssignmentDetails = List();
   List subjectsIcons = List();
+  int detailStatus = 0;
+  int detailIndex = 0;
+  int _indexedStudent = 0;
+
+  set indexedStudent(int indexedStudent) {
+    this._indexedStudent = indexedStudent;
+    notifyListeners();
+  }
+  get indexedStudent => _indexedStudent;
+
+  void changeDetailStatus({status, index})
+  {
+    detailIndex = index;
+    detailStatus = status;
+    notifyListeners();
+  }
 
   AccountModel getAccount(DocumentSnapshot qs) {
     //accountModelFromJson(jsonEncode(qs.data()));
@@ -57,7 +76,7 @@ class AccountProvider with ChangeNotifier {
   }
 
   SchoolYearsModel getSchoolYear(DocumentSnapshot qs) {
-    print(qs.data());
+   // print(qs.data());
     try {
       if (qs.data() != null) {
         if (qs.data()['is_current_year'] == "Y") {
@@ -88,7 +107,7 @@ class AccountProvider with ChangeNotifier {
   }
 
   ReportCardModel getReportCard(DocumentSnapshot qs, String subjectId) {
-    print(qs.data()[subjectId]);
+   // print(qs.data()[subjectId]);
     try {
       ReportCardModel r = ReportCardModel.fromJson(qs.data()[subjectId]);
       return r;
@@ -143,24 +162,32 @@ class AccountProvider with ChangeNotifier {
   }
 
   void studentIdUpdate({String valueAt}) {
-    List<String> name = valueAt.split(' ');
-    name.remove('');
-
-    List<StudentModel> temp = List<StudentModel>.from(this.students.where(
-        (element) =>
-            element.firstName.trim() == name[0] &&
-            element.lastName.trim() == name[1]));
-    print('=========${temp}');
-    if (temp.isNotEmpty)
-      this.studentId = temp[0].studentId.toString();
-    else
-      this.studentId = '';
+    int containedIndex = this.parents.students.values.toList().indexOf(valueAt);
+    String stdId = this.parents.students.keys.elementAt(containedIndex);
+    this.indexedStudent = containedIndex;
+     this.studentId = stdId;
+    this.studentName = valueAt;
+    // List<String> name = valueAt.split(' ');
+    // name.remove('');
+    //
+    // List<StudentModel> temp = List<StudentModel>.from(this.students.where(
+    //     (element) =>
+    //         element.firstName.trim() == name[0] &&
+    //         element.lastName.trim() == name[1]));
+    // print('=========${temp}');
+    // if (temp.isNotEmpty)
+    //   {
+    //     this.studentId = temp[0].studentId.toString();
+    //     print("Old method std Id ==> ${temp[0].studentId}");
+    //   }
+    // else
+    //   this.studentId = '';
 
     notifyListeners();
   }
 
   void studentUpdate(
-      {int valueAt, bool attendance = false, bool isUpdateView = false}) {
+      {int valueAt, bool attendance = false, bool isUpdateView = false, bool assignment = false}) {
     //clear all list here
     this.schools = Map();
     this.schoolList.clear();
@@ -174,6 +201,7 @@ class AccountProvider with ChangeNotifier {
     if (!isUpdateView) {
       this.studentName = this.parents.students.values.elementAt(valueAt);
       this.studentId = this.parents.students.keys.elementAt(valueAt).toString();
+      this.indexedStudent = valueAt;
     }
     // get all data for transcript and attendance to show already populated
     this.getSchools();
@@ -218,6 +246,14 @@ class AccountProvider with ChangeNotifier {
             schoolId1: this.schoolId,
             sessionId1: this.sessionId);
       }
+     if(assignment){
+       this.subjectId = this.studentSubjects.values.elementAt(0);
+       this.getAssignments(
+           subjectId: this.subjectId,
+           programId1: this.programId,
+           schoolId1: this.schoolId,
+           sessionId1: this.sessionId);
+     }
       notifyListeners();
     }
     notifyListeners();
@@ -258,6 +294,7 @@ class AccountProvider with ChangeNotifier {
 
   getSessions({String schoolId}) async {
     this.schoolYearList.clear();
+    this.programsList.clear();
     this.studentSubjects = Map();
     this.schools[schoolId].schoolYears.keys.forEach((element) {
       DatabaseServices().schoolYears.doc(element).get().then((value) {
@@ -433,5 +470,85 @@ class AccountProvider with ChangeNotifier {
     });
 
     if (!primary) notifyListeners();
+  }
+
+  getAssignments(
+      {String schoolId1,
+        String programId1,
+        String sessionId1,
+        String subjectId}) {
+    assignmentList.clear();
+    dueAssignmentList.clear();
+      gradedAssignmentList.clear();
+      submittedAssignmentList.clear();
+    dueAssignmentDetails.clear();
+    gradedAssignmentDetails.clear();
+    submittedAssignmentDetails.clear();
+
+    String sbId = '';
+    this.studentSubjects.forEach((key, value) {
+      if (value.contains(subjectId)) {
+        sbId = key;
+      }
+    });
+    print("********* GET ASSIGNMENTS *******");
+    print('School id -> $schoolId1 || Program id -> $programId1 || Session id -> $sessionId1 || Subject id -> $sbId || Student id -> $studentId');
+    DatabaseServices()
+        .students
+        .doc(studentId)
+        .collection('Assignment').where('school_id', isEqualTo: int.tryParse(schoolId1))
+    .where('school_year', isEqualTo: int.tryParse(sessionId1))
+    .where('program_id', isEqualTo: int.tryParse(programId1))
+    .where('subject_id', isEqualTo: int.tryParse(sbId))
+        .get()
+        .then((assignData) {
+          print("Assignment data -->> ${assignData.docs.length}");
+          if(assignData.docs != null && assignData.docs.isNotEmpty)
+            {
+              assignData.docs.forEach((element) {
+                print("Assign data -->> ${element.data()}");
+                if(element.data()['status'] == 'PENDING')
+                {
+                  DatabaseServices().assignments.doc(element.data()['assignment_id'].toString()).get().then((details) {
+                    print("-------DETAILS--------");
+                    print("${details.data()}");
+                    dueAssignmentDetails.add(details.data());
+                    dueAssignmentList.add(element.data());
+
+                  });
+
+                }
+                if(element.data()['status'] == 'GRADED')
+                  {
+                    DatabaseServices().assignments.doc(element.data()['assignment_id'].toString()).get().then((details) {
+                      print("-------DETAILS--------");
+                      print("${details.data()}");
+                      gradedAssignmentDetails.add(details.data());
+                      gradedAssignmentList.add(element.data());
+                    });
+
+                  }
+                if(element.data()['status'] == 'WDUEDATE' || element.data()['status'] == 'ADUEDATE')
+                {
+                  DatabaseServices().assignments.doc(element.data()['assignment_id'].toString()).get().then((details) {
+                    print("-------DETAILS--------");
+                    print("${details.data()}");
+                    submittedAssignmentDetails.add(details.data());
+                    submittedAssignmentList.add(element.data());
+                  });
+
+                }
+
+
+                assignmentList.add(element.data());
+                // DatabaseServices().assignments.doc(element.data()['assignment_id'].toString()).get().then((assignSubData){
+                //   print("Assign SUB Data --> ${assignSubData.data()}");
+                // } );
+
+              });
+            //  notifyListeners();
+            }
+      notifyListeners();
+    });
   }
 }

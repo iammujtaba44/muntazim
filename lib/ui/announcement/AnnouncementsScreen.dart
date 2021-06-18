@@ -22,6 +22,10 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
   String schoolIdName;
   StreamController<bool> dataController = StreamController<bool>.broadcast();
   PermissionService _permissionService = PermissionService();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  DrawerService _drawerService;
+  bool isDrawerOpen = false;
+  StreamController _drawerController = StreamController<bool>.broadcast();
 
   @override
   void initState() {
@@ -33,18 +37,30 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
     initPlatformState();
 
     schoolId = parent.parents.schools.values.elementAt(0);
-    print("*******${schoolId}");
+   // print("*******${schoolId}");
     schoolIdName = getSchoolId(value1: schoolId, parent: parent);
-    print("*******${schoolIdName}");
+   // print("*******${schoolIdName}");
     parent.getSchoolYearForAnnouncement(
         selectedSchoolId: schoolIdName, primary: true, context: context);
     Future.delayed(Duration(seconds: 2), () {
       dataController.sink.add(true);
 
-      print('**ANNOUNCEMENT --> ${parent.announcementList.length}');
+   //   print('**ANNOUNCEMENT --> ${parent.announcementList.length}');
+    });
+    _drawerController.add(false);
+    _drawerService = Provider.of(context, listen: false);
+    _listenDrawerService();
+    Future.delayed(Duration(milliseconds: 200),(){
+      _drawerController.sink.add(true);
+    });
+
+  }
+  _listenDrawerService() {
+    _drawerService.status.listen((status) {
+      isDrawerOpen = status;
+      _drawerController.sink.add(true);
     });
   }
-
   @override
   Widget build(BuildContext context) {
     final _height = MediaQuery.of(context).size.height;
@@ -54,6 +70,8 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
     return Stack(
       children: [
         Scaffold(
+          key: _scaffoldKey,
+          drawer: DrawerView(),
           appBar: myAppBar(_height),
           backgroundColor: CustomColors.lightBackgroundColor,
           body: Padding(
@@ -173,7 +191,26 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
             ),
           ),
         ),
-        Helper.myHeader(text: 'Notifications', height: _height),
+        StreamBuilder(
+            stream: _drawerController.stream,
+            builder: (context,drawerShot){
+              if(!drawerShot.hasData)
+                return Center();
+              else
+              {
+                return Helper.myHeader(
+                    text: 'Notifications',
+                    height: _height,
+                    isDrawerOpen: this.isDrawerOpen,
+                    onTap: () {
+                      _scaffoldKey.currentState.openDrawer();
+
+                    });
+              }
+            })
+        // Helper.myHeader(text: 'Notifications', height: _height,onTap: (){
+        //   _scaffoldKey.currentState.openDrawer();
+        // }),
       ],
     );
   }
@@ -252,13 +289,13 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                     },
                     child: Column(children: [
                       Helper.text(value: '', fSize: height * 0.02),
-                      Helper.text(value: 'Dismiss', fSize: height * 0.03),
+                      Helper.text(value: 'Dismiss', fSize: height * 0.02),
                     ]),
                   ),
                   // IF YOU WANT TO ADD ICON
                   yourWidget: Container(
                     // height: height * 0.2,
-                    margin: EdgeInsets.only(bottom: height * 0.05),
+                    margin: EdgeInsets.only(bottom: height * 0.05,left: height*0.017,right: height*0.017),
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -306,14 +343,17 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                                         SizedBox(
                                           width: 5.0,
                                         ),
-                                        temp.length < 2
-                                            ? Helper.text(
-                                                value: '${temp[0]}',
-                                                fSize: height * 0.02)
-                                            : Helper.text(
-                                                value:
-                                                    '${data['attachment'][index].split('%')[1].split('?')[0]}',
-                                                fSize: height * 0.02)
+                                        Container(
+                                          width: height*0.2,
+                                          child: temp.length < 2
+                                              ? Helper.text(
+                                              value: '${temp[0]}',
+                                              fSize: height * 0.02)
+                                              : Helper.text(
+                                              value:
+                                              '${data['attachment'][index].split('%')[1].split('?')[0]}',
+                                              fSize: height * 0.02),
+                                        )
                                       ],
                                     )
                                     // child: Helper.text(
@@ -353,6 +393,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
   Widget myAppBar(_height) {
     return AppBar(
       backgroundColor: Colors.transparent,
+      automaticallyImplyLeading: false,
       // leading: Padding(
       //     padding: EdgeInsets.only(bottom: 50.0),
       //     child: Icon(Icons.menu_rounded)),

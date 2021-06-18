@@ -19,7 +19,7 @@ class Auth extends ResponseState {
         return ListError(
             error: ErrorResponse(jsonDecode(response.body)['message']));
       }
-      ;
+
     } on SocketException {
       // print('No Internet');
       return ListError(error: NoInternetException("No Internet"));
@@ -51,9 +51,14 @@ class Auth extends ResponseState {
         user.removeAs();
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (_) => LoginScreen()));
-        // return LoadedState(data: loginModelFromJson(response.body));
-      } else if (jsonDecode(response.body)['status'] == 402) {
-        // print(jsonDecode(response.body)['message']);
+
+      }
+      else if (jsonDecode(response.body)['status'] == 401) {
+        user.removeAs();
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => LoginScreen()));
+      }
+      else if (jsonDecode(response.body)['status'] == 402) {
         return ListError(
             error: ErrorResponse(jsonDecode(response.body)['message']));
       }

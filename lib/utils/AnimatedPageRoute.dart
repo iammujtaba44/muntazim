@@ -4,16 +4,16 @@ class AnimatedPageRoute extends PageRouteBuilder {
   final Widget widget;
   AnimatedPageRoute({this.widget})
       : super(
-            transitionDuration: Duration(seconds: 2),
+            transitionDuration: Duration(seconds: 1),
             transitionsBuilder: (BuildContext context,
                 Animation<double> animation,
                 Animation<double> Secanimation,
                 Widget child) {
               // animation =
               //     CurvedAnimation(parent: animation, curve: Curves.easeInOutSine);
-              var begin = Offset(0, 1);
+              var begin = Offset(-1, 0);
               var end = Offset.zero;
-              var curve = Curves.bounceInOut;
+              var curve = Curves.ease;
               // var tween = Tween(begin: begin, end: end);
               var tween =
                   Tween(begin: begin, end: end).chain(CurveTween(curve: curve));

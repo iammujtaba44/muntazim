@@ -33,4 +33,11 @@ class UserProvider extends ChangeNotifier {
     this.parentData = null;
     notifyListeners();
   }
+  void clearAs() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    preferences.clear();
+
+    this.parentData = null;
+    notifyListeners();
+  }
 }

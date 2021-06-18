@@ -8,6 +8,8 @@ import 'package:provider/single_child_widget.dart';
 List<SingleChildWidget> providers = [
   ChangeNotifierProvider<AccountProvider>(create: (_) => AccountProvider()),
   ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
+  Provider(create: (_) => DrawerService()),
+
 ];
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
