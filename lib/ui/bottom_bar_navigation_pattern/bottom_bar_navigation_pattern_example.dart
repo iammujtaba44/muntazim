@@ -4,7 +4,6 @@ import 'package:muntazim/ui/TranscriptScreen.dart';
 import 'package:muntazim/ui/announcement/AnnouncementsScreen.dart';
 import 'package:muntazim/ui/bottom_bar_navigation_pattern/animated_bottom_bar.dart';
 import 'package:muntazim/ui/fees/FeesScreen.dart';
-import 'package:muntazim/ui/notification/NotificationScreen.dart';
 
 import 'package:muntazim/core/plugins.dart';
 
@@ -17,7 +16,7 @@ class BottomBarNavigationPatternExample extends StatefulWidget {
       color: CustomColors.darkBackgroundColor, //Colors.indigo,
     ),
     BarItem(
-      text: "Transcript",
+      text: "Report Card",
       iconData: Icons.assignment,
       color: CustomColors.darkBackgroundColor, //Colors.teal,
     ),
@@ -27,8 +26,8 @@ class BottomBarNavigationPatternExample extends StatefulWidget {
       color: CustomColors.darkBackgroundColor, //Colors.pinkAccent,
     ),
     BarItem(
-      text: "Fees",
-      iconData: Icons.payment,
+      text: "Assign.",
+      iconData: Icons.assignment_outlined,
       color: CustomColors.darkBackgroundColor, //Colors.pinkAccent,
     ),
     BarItem(
@@ -52,8 +51,10 @@ class _BottomBarNavigationPatternExampleState
     HomeScreen(),
     TranscriptScreen(),
     AttendanceScreen(),
-    FeesScreen(),
-    AnnouncementsScreen()
+    AssignmnetScreen(),
+    AnnouncementsScreen(),
+    AssignmnetDetailScreen(),
+
   ];
 
   @override
@@ -83,9 +84,9 @@ class _BottomBarNavigationPatternExampleState
           barStyle: BarStyle(fontSize: 12.0, iconSize: 20.0),
           onBarTap: (index) {
             print(index);
-            if (index > 0 && index < 3) {
+            if (index > 0 && index < 4) {
               parent.studentUpdate(
-                  valueAt: 0, attendance: index == 2 ? true : false);
+                  valueAt: parent.indexedStudent, attendance: index == 2 ? true : false, assignment: index == 3? true:false) ;
             }
             setState(() {
               selectedBarIndex = index;

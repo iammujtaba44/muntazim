@@ -36,4 +36,13 @@ export 'package:muntazim/utils/Helper.dart';
 export 'package:popup_menu/popup_menu.dart';
 export 'package:muntazim/core/services/providers/AccountProvider.dart';
 export 'package:muntazim/core/services/providers/UserProvider.dart';
+export 'package:muntazim/utils/permisson_services.dart';
+export 'package:muntazim/ui/assignment/assignmentScreen.dart';
+export 'package:muntazim/ui/assignment/AssignmentDetail.dart';
+export 'package:muntazim/utils/drawer.dart';
+export 'package:muntazim/core/app_constants.dart';
+export 'package:muntazim/utils/header_view.dart';
+
+
+
 //export 'package:muntazim/core/services/models/studentModel/StudentModel.dart';

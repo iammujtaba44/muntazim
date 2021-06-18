@@ -1,6 +1,7 @@
 library animated_dialog_box;
 
 import 'package:flutter/material.dart';
+import 'package:muntazim/core/plugins.dart';
 import 'package:vector_math/vector_math.dart' as math;
 
 class animated_dialog_box {
@@ -50,11 +51,14 @@ class animated_dialog_box {
             child: Opacity(
               opacity: a1.value,
               child: AlertDialog(
+                contentPadding: EdgeInsets.all(10.0),
+
                 shape: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15.0)),
                 title: title,
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     //  icon ?? SizedBox(),
                     //   Container(
@@ -65,7 +69,10 @@ class animated_dialog_box {
                       firstButton,
                       Spacer(),
                       secondButton,
-                    ])
+                    ]),
+                    const SizedBox(
+                      height: 10,
+                    )
                   ],
                 ),
                 // actions: <Widget>[
