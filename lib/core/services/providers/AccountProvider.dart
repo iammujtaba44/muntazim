@@ -56,6 +56,7 @@ class AccountProvider with ChangeNotifier {
   AccountModel getAccount(DocumentSnapshot qs) {
     //accountModelFromJson(jsonEncode(qs.data()));
     // print(qs.data());
+    print("**** GET ACCOUNT ***");
     try {
       this.parents = accountModelFromJson(jsonEncode(qs.data()));
 
@@ -530,13 +531,25 @@ class AccountProvider with ChangeNotifier {
                   }
                 if(element.data()['status'] == 'WDUEDATE' || element.data()['status'] == 'ADUEDATE')
                 {
-                  DatabaseServices().assignments.doc(element.data()['assignment_id'].toString()).get().then((details) {
-                    print("-------DETAILS--------");
-                    print("${details.data()}");
-                    submittedAssignmentDetails.add(details.data());
-                    submittedAssignmentList.add(element.data());
-                  });
+                  if(element.data()['marks'] != "")
+                    {
+                      DatabaseServices().assignments.doc(element.data()['assignment_id'].toString()).get().then((details) {
+                        print("-------DETAILS--------");
+                        print("${details.data()}");
+                        gradedAssignmentDetails.add(details.data());
+                        gradedAssignmentList.add(element.data());
+                      });
 
+                    }
+                  else
+                    {
+                      DatabaseServices().assignments.doc(element.data()['assignment_id'].toString()).get().then((details) {
+                        print("-------DETAILS--------");
+                        print("${details.data()}");
+                        submittedAssignmentDetails.add(details.data());
+                        submittedAssignmentList.add(element.data());
+                      });
+                    }
                 }
 
 

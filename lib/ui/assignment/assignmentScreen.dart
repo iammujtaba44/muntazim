@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:muntazim/core/plugins.dart';
+import 'package:muntazim/core/services/models/studentModel/StudentModel.dart';
 import 'package:muntazim/ui/assignment/AssignmentDetail.dart';
 import 'package:muntazim/utils/CustomColors.dart';
 import 'package:muntazim/utils/Helper.dart';
@@ -936,20 +938,50 @@ String schoolName = "";
           mainAxisAlignment: MainAxisAlignment.start,
           //crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(
-              radius: _height * 0.025,
-              backgroundColor: CustomColors.lightGreenColor,
-              child: CircleAvatar(
-                radius: _height * 0.022,
-                backgroundColor: Colors.white,
-                backgroundImage: AssetImage('assets/user_avatar.png'),
-                // child: Icon(
-                //   Icons.person,
-                //   color: CustomColors.darkGreenColor,
-                //   size: _height * 0.022,
-                // ),
-              ),
-            ),
+            StreamBuilder<StudentModel>(
+                stream: parent.studentStream(
+                    stId: parent.studentId),
+                builder: (_, photo) {
+                  if (!photo.hasData) {
+                    return CircleAvatar(
+                      radius: 30,
+                      backgroundColor:CustomColors.lightGreenColor,
+
+                      child: Icon(Icons.person,size: 30,color: Colors.white,),
+                    );
+                  }
+                  return CachedNetworkImage(
+                    fit: BoxFit.cover,
+                    fadeInCurve: Curves.easeInCirc,
+                    imageUrl:
+                    photo.data.photo,
+                    imageBuilder:
+                        (context, imageProvider) =>
+                        CircleAvatar(
+                          radius: _height * 0.025,
+                          backgroundColor: CustomColors.lightGreenColor,
+                          child: CircleAvatar(
+                            radius: _height * 0.022,
+                            backgroundColor: Colors.white,
+                            backgroundImage: imageProvider,
+                          ),
+                        ),
+                    placeholder: (context, url) =>
+                        CircleAvatar(
+                          radius: _height * 0.025,
+                          backgroundColor: CustomColors.lightGreenColor,
+                          child: CircleAvatar(
+                            radius: _height * 0.022,
+                            backgroundColor: Colors.white,
+                            child: Helper.CIndicator(),
+                          ),
+                        ),
+                    errorWidget: (context, url,
+                        error) =>
+                        Image.asset(
+                            'assets/user_avatar.png'),
+                  );
+                }),
             SizedBox(
               width: _height * 0.007,
             ),

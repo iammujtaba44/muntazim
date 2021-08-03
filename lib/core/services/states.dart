@@ -1,4 +1,3 @@
-import 'package:equatable/equatable.dart';
 import 'package:muntazim/core/plugins.dart';
 
 // abstract class State extends Equatable {

@@ -32,13 +32,13 @@ class AccountModel {
 
   dynamic address1;
   dynamic address2;
-  String cell;
-  String cityName;
+  dynamic cell;
+  dynamic cityName;
   dynamic country;
-  String email;
-  String firstName;
-  String lastName;
-  String loginId;
+  dynamic email;
+  dynamic firstName;
+  dynamic lastName;
+  dynamic loginId;
   dynamic masjidId;
   dynamic parentId;
   dynamic phone;
@@ -48,8 +48,8 @@ class AccountModel {
   //   // List<dynamic> students;
   dynamic state;
 
-  String username;
-  String zipcode;
+  dynamic username;
+  dynamic zipcode;
 
   factory AccountModel.fromJson(Map<String, dynamic> json) => AccountModel(
         address1: json["address1"],
