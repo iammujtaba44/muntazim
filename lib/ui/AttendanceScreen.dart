@@ -11,6 +11,7 @@ import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart'
     show CalendarCarousel, EventList;
 import 'package:muntazim/core/plugins.dart';
 import 'package:muntazim/utils/animatedDialogBox.dart';
+import 'package:muntazim/utils/get_student_image.dart';
 
 class AttendanceScreen extends StatefulWidget {
   @override
@@ -29,7 +30,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   StreamController _calenderStream = StreamController<bool>.broadcast();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
-
   var school;
   var sessionId;
   var programId;
@@ -43,7 +43,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   bool isDrawerOpen = false;
   StreamController _drawerController = StreamController<bool>.broadcast();
-
 
   @override
   void initState() {
@@ -75,11 +74,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     _drawerController.add(false);
     _drawerService = Provider.of(context, listen: false);
     _listenDrawerService();
-    Future.delayed(Duration(milliseconds: 200),(){
+    Future.delayed(Duration(milliseconds: 200), () {
       _drawerController.sink.add(true);
     });
-
   }
+
   _listenDrawerService() {
     _drawerService.status.listen((status) {
       isDrawerOpen = status;
@@ -109,7 +108,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return Stack(
       children: [
         Scaffold(
-          key:_scaffoldKey,
+          key: _scaffoldKey,
           drawer: DrawerView(),
           appBar: myAppBar(_height, parent: parent),
           backgroundColor: CustomColors.lightBackgroundColor,
@@ -222,18 +221,16 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         ),
         StreamBuilder(
             stream: _drawerController.stream,
-            builder: (context,drawerShot){
-              if(!drawerShot.hasData)
+            builder: (context, drawerShot) {
+              if (!drawerShot.hasData)
                 return Center();
-              else
-              {
+              else {
                 return Helper.myHeader(
                     text: 'ATTENDANCE',
                     height: _height,
                     isDrawerOpen: this.isDrawerOpen,
                     onTap: () {
                       _scaffoldKey.currentState.openDrawer();
-
                     });
               }
             })
@@ -545,50 +542,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           mainAxisAlignment: MainAxisAlignment.start,
           //crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            StreamBuilder<StudentModel>(
-                stream: parent.studentStream(
-                    stId: parent.studentId),
-                builder: (_, photo) {
-                  if (!photo.hasData) {
-                    return CircleAvatar(
-                      radius: 30,
-                      backgroundColor:CustomColors.lightGreenColor,
-
-                      child: Icon(Icons.person,size: 30,color: Colors.white,),
-                    );
-                  }
-                  return CachedNetworkImage(
-                    fit: BoxFit.cover,
-                    fadeInCurve: Curves.easeInCirc,
-                    imageUrl:
-                    photo.data.photo,
-                    imageBuilder:
-                        (context, imageProvider) =>
-                        CircleAvatar(
-                          radius: _height * 0.025,
-                          backgroundColor: CustomColors.lightGreenColor,
-                          child: CircleAvatar(
-                            radius: _height * 0.022,
-                            backgroundColor: Colors.white,
-                            backgroundImage: imageProvider,
-                          ),
-                        ),
-                    placeholder: (context, url) =>
-                        CircleAvatar(
-                          radius: _height * 0.025,
-                          backgroundColor: CustomColors.lightGreenColor,
-                          child: CircleAvatar(
-                            radius: _height * 0.022,
-                            backgroundColor: Colors.white,
-                            child: Helper.CIndicator(),
-                          ),
-                        ),
-                    errorWidget: (context, url,
-                        error) =>
-                        Image.asset(
-                            'assets/user_avatar.png'),
-                  );
-                }),
+            GetStudentImage(
+              model: parent,
+            ),
             SizedBox(
               width: _height * 0.007,
             ),
@@ -690,12 +646,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Helper.text(
-                          value: schoolName ??
-                              'School', //'Academic Year',
+                          value: schoolName ?? 'School', //'Academic Year',
                           fWeight: FontWeight.bold,
-                          fSize: schoolName.length > 12
-                              ? _height * 0.018
-                              : 20.0,
+                          fSize:
+                              schoolName.length > 12 ? _height * 0.018 : 20.0,
                           fColor: Colors.white),
                       Helper.text(
                           value: academicYearName ??
@@ -778,16 +732,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                             List temp = List.from(parent
                                                 .schoolList
                                                 .where((element) =>
-                                            element['school_id']
-                                                .toString() ==
-                                                newValue));
+                                                    element['school_id']
+                                                        .toString() ==
+                                                    newValue));
                                             boxState(() {
                                               school = newValue;
                                               this.sessionId = null;
                                               this.programId = null;
                                               this.monthId = null;
                                               this.subjectId = null;
-                                              this.schoolName = temp[0]['school_name'];
+                                              this.schoolName =
+                                                  temp[0]['school_name'];
                                               //   print(school);
                                             });
                                             parent.getSessions(
@@ -1043,31 +998,30 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                 ],
                               ),
                             ),
-
                           ]),
                         ),
                         Row(children: [
                           multiColorExpandedButton(
-                              onTap: () {
-                                Navigator.pop(context);
-                              },
-                              buttonText: "CANCEL",
-                              primaryColor: CustomColors.darkGreenColor,
-                          //    secondaryColor: CustomColors.lightGreenColor
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            buttonText: "CANCEL",
+                            primaryColor: CustomColors.darkGreenColor,
+                            //    secondaryColor: CustomColors.lightGreenColor
                           ),
                           multiColorExpandedButton(
-                              onTap: () {
-                                boxState(() {
-                                  presentDates.clear();
-                                  absentDates.clear();
-                                  _markedDateMap.clear();
-                                });
-                                eventsFiller(parent: parent);
-                                Navigator.pop(context);
-                              },
-                              buttonText: "SEARCH",
-                              primaryColor: CustomColors.buttonLightBlueColor,
-                          //    secondaryColor: CustomColors.buttonDarkBlueColor
+                            onTap: () {
+                              boxState(() {
+                                presentDates.clear();
+                                absentDates.clear();
+                                _markedDateMap.clear();
+                              });
+                              eventsFiller(parent: parent);
+                              Navigator.pop(context);
+                            },
+                            buttonText: "SEARCH",
+                            primaryColor: CustomColors.buttonLightBlueColor,
+                            //    secondaryColor: CustomColors.buttonDarkBlueColor
                           ),
                         ]),
                         const SizedBox(
@@ -1098,13 +1052,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-            color: primaryColor,
-            borderRadius: BorderRadius.all(Radius.circular(5.0)),
-            // gradient: LinearGradient(
-            //     begin: Alignment.centerLeft,
-            //     end: Alignment.centerRight,
-            //     colors: [primaryColor, secondaryColor])
-         ),
+          color: primaryColor,
+          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+          // gradient: LinearGradient(
+          //     begin: Alignment.centerLeft,
+          //     end: Alignment.centerRight,
+          //     colors: [primaryColor, secondaryColor])
+        ),
         margin: EdgeInsets.only(left: 15.0, right: 15.0, top: 5.0, bottom: 5.0),
         padding: EdgeInsets.only(left: 15, right: 15, top: 5.0, bottom: 5.0),
         child: Row(
@@ -1121,5 +1075,3 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     ));
   }
 }
-
-
