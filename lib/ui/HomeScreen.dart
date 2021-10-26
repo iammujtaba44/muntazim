@@ -7,7 +7,7 @@ import 'package:muntazim/core/plugins.dart';
 import 'package:muntazim/core/services/models/SchoolModel.dart';
 import 'package:muntazim/core/services/models/SchoolYearsModel.dart';
 import 'package:muntazim/core/services/models/studentModel/StudentModel.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
+//import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -22,42 +22,41 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isDrawerOpen = false;
   StreamController _drawerController = StreamController<bool>.broadcast();
 
-
-
   @override
   void initState() {
     super.initState();
     _drawerController.add(false);
-     _drawerService = Provider.of(context, listen: false);
+    _drawerService = Provider.of(context, listen: false);
     _listenDrawerService();
-    Future.delayed(Duration(milliseconds: 200),(){
+    Future.delayed(Duration(milliseconds: 200), () {
       _drawerController.sink.add(true);
     });
 
     // DatabaseServices().test();
   }
-  RefreshController _refreshController =
-  RefreshController(initialRefresh: false);
 
-  void _onRefresh() async{
-    await Future.delayed(Duration(milliseconds: 1000));
-    _refreshController.refreshCompleted();
-    setState(() {});
-  }
+  // RefreshController _refreshController =
+  //     RefreshController(initialRefresh: false);
 
-  void _onLoading() async{
-    await Future.delayed(Duration(milliseconds: 1000));
-    if(mounted)
-      setState(() {});
-    _refreshController.loadComplete();
-  }
+  // void _onRefresh() async {
+  //   await Future.delayed(Duration(milliseconds: 1000));
+  //   _refreshController.refreshCompleted();
+  //   setState(() {});
+  // }
+
+  // void _onLoading() async {
+  //   await Future.delayed(Duration(milliseconds: 1000));
+  //   if (mounted) setState(() {});
+  //   _refreshController.loadComplete();
+  // }
 
   _listenDrawerService() {
     _drawerService.status.listen((status) {
-        isDrawerOpen = status;
-        _drawerController.sink.add(true);
+      isDrawerOpen = status;
+      _drawerController.sink.add(true);
     });
   }
+
   @override
   Widget build(BuildContext context) {
     final _height = MediaQuery.of(context).size.height;
@@ -65,10 +64,13 @@ class _HomeScreenState extends State<HomeScreen> {
     PopupMenu.context = context;
     var parent = Provider.of<AccountProvider>(context);
     var user = Provider.of<UserProvider>(context);
-    return SmartRefresher(
-        enablePullDown: true,
-        enablePullUp: false,
-        header: WaterDropMaterialHeader(backgroundColor: CustomColors.darkBackgroundColor,color: CustomColors.buttonDarkBlueColor,distance: _height*0.14,),
+    return RefreshIndicator(
+        onRefresh: () async {
+          setState(() {});
+        },
+        //  enablePullDown: true,
+        //  enablePullUp: false,
+        //  header: WaterDropMaterialHeader(backgroundColor: CustomColors.darkBackgroundColor,color: CustomColors.buttonDarkBlueColor,distance: _height*0.14,),
         // footer: CustomFooter(
         //   builder: (BuildContext context,LoadStatus mode){
         //     Widget body ;
@@ -93,15 +95,14 @@ class _HomeScreenState extends State<HomeScreen> {
         //     );
         //   },
         // ),
-        controller: _refreshController,
-        onRefresh: _onRefresh,
-        onLoading: _onLoading,
-        child:  Stack(
+        //  controller: _refreshController,
+        //  onRefresh: _onRefresh,
+        // onLoading: _onLoading,
+        child: Stack(
           children: [
             Scaffold(
               key: _scaffoldKey,
               drawer: DrawerView(),
-
               appBar: myAppBar(_height, _width, user: user),
               backgroundColor: CustomColors.lightBackgroundColor,
               body: SingleChildScrollView(
@@ -125,29 +126,33 @@ class _HomeScreenState extends State<HomeScreen> {
                           AccountModel data = snapshot.data;
                           if (data.students != null) {
                             return Padding(
-                              padding:
-                              EdgeInsets.fromLTRB(25, _height * 0.05, 25, 0),
+                              padding: EdgeInsets.fromLTRB(
+                                  25, _height * 0.05, 25, 0),
                               child: Column(
-                                children:
-                                List.generate(data.students.length, (index) {
+                                children: List.generate(data.students.length,
+                                    (index) {
                                   return Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Padding(
-                                          padding:
-                                          EdgeInsets.only(top: _height * 0.01),
+                                          padding: EdgeInsets.only(
+                                              top: _height * 0.01),
                                           child: ExpansionTileCard(
                                             //key: stCard,
                                             animateTrailing: true,
                                             shadowColor:
-                                            CustomColors.darkGreenColor,
-                                            duration: Duration(milliseconds: 500),
+                                                CustomColors.darkGreenColor,
+                                            duration:
+                                                Duration(milliseconds: 500),
                                             elevation: 2.0,
                                             elevationCurve: Curves.bounceOut,
                                             heightFactorCurve: Curves.easeInOut,
-                                            contentPadding: EdgeInsets.all(10.0),
+                                            contentPadding:
+                                                EdgeInsets.all(10.0),
 
-                                            leading: StreamBuilder<StudentModel>(
+                                            leading: StreamBuilder<
+                                                    StudentModel>(
                                                 stream: parent.studentStream(
                                                     stId: data.students.keys
                                                         .elementAt(index)),
@@ -155,120 +160,132 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   if (!photo.hasData) {
                                                     return CircleAvatar(
                                                       radius: 30,
-                                                      backgroundColor:CustomColors.lightGreenColor,
-
-                                                      child: Icon(Icons.person,size: 30,color: Colors.white,),
+                                                      backgroundColor:
+                                                          CustomColors
+                                                              .lightGreenColor,
+                                                      child: Icon(
+                                                        Icons.person,
+                                                        size: 30,
+                                                        color: Colors.white,
+                                                      ),
                                                     );
                                                   }
                                                   return CachedNetworkImage(
                                                     fit: BoxFit.cover,
-                                                    fadeInCurve: Curves.easeInCirc,
-                                                    imageUrl:
-                                                    photo.data.photo,
-                                                    imageBuilder:
-                                                        (context, imageProvider) =>
+                                                    fadeInCurve:
+                                                        Curves.easeInCirc,
+                                                    imageUrl: photo.data.photo,
+                                                    imageBuilder: (context,
+                                                            imageProvider) =>
                                                         CircleAvatar(
                                                             radius: 30,
                                                             backgroundImage:
-                                                            imageProvider),
-                                                    placeholder: (context, url) =>
+                                                                imageProvider),
+                                                    placeholder: (context,
+                                                            url) =>
                                                         CircleAvatar(
                                                             radius: 30,
                                                             backgroundColor:
-                                                            Colors.transparent,
+                                                                Colors
+                                                                    .transparent,
                                                             child: Helper
                                                                 .CIndicator()),
                                                     errorWidget: (context, url,
-                                                        error) =>
+                                                            error) =>
                                                         Image.asset(
                                                             'assets/user_avatar.png'),
                                                   );
                                                 }),
                                             title: Helper.text(
                                                 value:
-                                                '${data.students.values.elementAt(index)}',
+                                                    '${data.students.values.elementAt(index)}',
                                                 fSize: _height * 0.025),
                                             subtitle: Column(
                                               crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 StreamBuilder<StudentModel>(
-                                                    stream: parent.studentStream(
-                                                        stId: data.students.keys
-                                                            .elementAt(index)),
+                                                    stream:
+                                                        parent.studentStream(
+                                                            stId: data
+                                                                .students.keys
+                                                                .elementAt(
+                                                                    index)),
                                                     builder: (_, student) {
                                                       if (!student.hasData) {
                                                         return Helper.text(
-                                                            value: '... .. ... .',
-                                                            fSize: _height * 0.02);
+                                                            value:
+                                                                '... .. ... .',
+                                                            fSize:
+                                                                _height * 0.02);
                                                       }
 
                                                       return Column(
                                                           crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                          children: List.generate(
-                                                              student.data.schools
-                                                                  .length,
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children:
+                                                              List.generate(
+                                                                  student
+                                                                      .data
+                                                                      .schools
+                                                                      .length,
                                                                   (sdIndex) {
-                                                                return StreamBuilder<
+                                                            return StreamBuilder<
                                                                     SchoolModel>(
-                                                                    stream: parent.schoolStream(
-                                                                        schoolId: student
-                                                                            .data
-                                                                            .schools
-                                                                            .keys
-                                                                            .elementAt(
+                                                                stream: parent.schoolStream(
+                                                                    schoolId: student
+                                                                        .data
+                                                                        .schools
+                                                                        .keys
+                                                                        .elementAt(
                                                                             sdIndex)),
-                                                                    builder:
-                                                                        (_, school) {
-                                                                      if (!school
-                                                                          .hasData) {
-                                                                        return Helper.text(
-                                                                            value:
+                                                                builder: (_,
+                                                                    school) {
+                                                                  if (!school
+                                                                      .hasData) {
+                                                                    return Helper.text(
+                                                                        value:
                                                                             '... .. ... .',
-                                                                            fSize:
-                                                                            _height *
-                                                                                0.02);
-                                                                      }
-                                                                      return Column(
-                                                                          crossAxisAlignment:
+                                                                        fSize: _height *
+                                                                            0.02);
+                                                                  }
+                                                                  return Column(
+                                                                      crossAxisAlignment:
                                                                           CrossAxisAlignment
                                                                               .start,
-                                                                          children: [
-                                                                            Helper.text(
-                                                                                value:
+                                                                      children: [
+                                                                        Helper.text(
+                                                                            value:
                                                                                 '${school.data.schoolName}',
-                                                                                fSize: _height *
-                                                                                    0.02,
-                                                                                fColor:
+                                                                            fSize: _height *
+                                                                                0.02,
+                                                                            fColor:
                                                                                 CustomColors.darkBackgroundColor),
-                                                                            Column(
-                                                                                crossAxisAlignment: CrossAxisAlignment
-                                                                                    .start,
-                                                                                children: List.generate(
-                                                                                    student.data.schools.values.elementAt(sdIndex).schoolYears.length,
-                                                                                        (schoolYearIndex) {
-                                                                                      return StreamBuilder<SchoolYearsModel>(
-                                                                                          stream: parent.schoolYearStream(schoolYearId: student.data.schools.values.elementAt(sdIndex).schoolYears.keys.elementAt(schoolYearIndex)),
-                                                                                          builder: (_, schoolYear) {
-                                                                                            if (!schoolYear.hasData) {
-                                                                                              return Center();
-                                                                                              //  return Helper.text(value: '... .. ... .', fSize: _height * 0.017);
-                                                                                            } else if (schoolYear.data == null) {
-                                                                                              return Center();
-                                                                                            } else {
-                                                                                              return Helper.text(value: schoolYear.data.schoolYear, fSize: _height * 0.017, fColor: CustomColors.buttonDarkBlueColor);
-                                                                                            }
-                                                                                          });
-                                                                                    }))
-                                                                            // Helper.text(
-                                                                            //     value: 'Grade',
-                                                                            //     fSize: _height *
-                                                                            //         0.017)
-                                                                          ]);
-                                                                    });
-                                                              }));
+                                                                        Column(
+                                                                            crossAxisAlignment:
+                                                                                CrossAxisAlignment.start,
+                                                                            children: List.generate(student.data.schools.values.elementAt(sdIndex).schoolYears.length, (schoolYearIndex) {
+                                                                              return StreamBuilder<SchoolYearsModel>(
+                                                                                  stream: parent.schoolYearStream(schoolYearId: student.data.schools.values.elementAt(sdIndex).schoolYears.keys.elementAt(schoolYearIndex)),
+                                                                                  builder: (_, schoolYear) {
+                                                                                    if (!schoolYear.hasData) {
+                                                                                      return Center();
+                                                                                      //  return Helper.text(value: '... .. ... .', fSize: _height * 0.017);
+                                                                                    } else if (schoolYear.data == null) {
+                                                                                      return Center();
+                                                                                    } else {
+                                                                                      return Helper.text(value: schoolYear.data.schoolYear, fSize: _height * 0.017, fColor: CustomColors.buttonDarkBlueColor);
+                                                                                    }
+                                                                                  });
+                                                                            }))
+                                                                        // Helper.text(
+                                                                        //     value: 'Grade',
+                                                                        //     fSize: _height *
+                                                                        //         0.017)
+                                                                      ]);
+                                                                });
+                                                          }));
                                                     }),
                                                 // parent.students.isEmpty
                                                 //     ? Helper.text(
@@ -318,38 +335,33 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                           } else {
                             return Padding(
-                              padding:
-                              EdgeInsets.fromLTRB(25, _height * 0.05, 25, 0),
+                              padding: EdgeInsets.fromLTRB(
+                                  25, _height * 0.05, 25, 0),
                               child: Text('checking data'),
                             );
                           }
                         }),
                   ],
                 ),
-
               ),
             ),
             StreamBuilder(
                 stream: _drawerController.stream,
-                builder: (context,drawerShot){
-              if(!drawerShot.hasData)
-                return Center();
-              else
-                {
-                  return Helper.myHeader(
-                      text: 'HOME',
-                      height: _height,
-                      isDrawerOpen: this.isDrawerOpen,
-                      onTap: () {
-                        _scaffoldKey.currentState.openDrawer();
-
-                      });
-                }
-            })
+                builder: (context, drawerShot) {
+                  if (!drawerShot.hasData)
+                    return Center();
+                  else {
+                    return Helper.myHeader(
+                        text: 'HOME',
+                        height: _height,
+                        isDrawerOpen: this.isDrawerOpen,
+                        onTap: () {
+                          _scaffoldKey.currentState.openDrawer();
+                        });
+                  }
+                })
           ],
-        )
-
-    );
+        ));
   }
 
   Widget TileBottomBar({double height, AccountProvider parent, int index}) {
@@ -519,14 +531,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 Icons.logout,
                 color: Colors.white,
               )),
-          MenuItem(
-              title: 'Profile',
-              textStyle:
-                  TextStyle(fontSize: height * 0.015, color: Colors.white),
-              image: Icon(
-                Icons.person,
-                color: Colors.white,
-              )),
+          // MenuItem(
+          //     title: 'Profile',
+          //     textStyle:
+          //         TextStyle(fontSize: height * 0.015, color: Colors.white),
+          //     image: Icon(
+          //       Icons.person,
+          //       color: Colors.white,
+          //     )),
         ],
         onClickMenu: onClickMenu,
         stateChanged: stateChanged,
@@ -584,5 +596,3 @@ class _GetNetworkImageState extends State<GetNetworkImage> {
     );
   }
 }
-
-
