@@ -54,7 +54,6 @@ class _BottomBarNavigationPatternExampleState
     AssignmnetScreen(),
     AnnouncementsScreen(),
     AssignmnetDetailScreen(),
-
   ];
 
   @override
@@ -86,7 +85,9 @@ class _BottomBarNavigationPatternExampleState
             print(index);
             if (index > 0 && index < 4) {
               parent.studentUpdate(
-                  valueAt: parent.indexedStudent, attendance: index == 2 ? true : false, assignment: index == 3? true:false) ;
+                  valueAt: parent.indexedStudent,
+                  attendance: index == 2 ? true : false,
+                  assignment: index == 3 ? true : false);
             }
             setState(() {
               selectedBarIndex = index;

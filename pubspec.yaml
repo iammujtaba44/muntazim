@@ -34,9 +34,9 @@ dependencies:
   flutter_launcher_name: "^0.0.1"
   permission_handler: ^4.0.0
   firebase_storage:
-  path_provider: any
+  #path_provider: any
   #pull_to_refresh: ^1.6.3
-#  downloads_path_provider: ^0.1.0
+  #downloads_path_provider: ^0.1.0
   flutter_spinkit: ^4.1.2+1
   avatar_glow: ^1.2.0
   colorful_safe_area: ^0.2.0
@@ -52,6 +52,7 @@ dependencies:
   provider: ^4.3.3
   cached_network_image: ^2.5.0
   intl: ^0.16.1
+  package_info_plus: ^0.6.4
 
 dev_dependencies:
   flutter_test:

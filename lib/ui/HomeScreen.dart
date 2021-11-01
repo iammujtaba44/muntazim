@@ -489,10 +489,10 @@ class _HomeScreenState extends State<HomeScreen> {
             child: GestureDetector(
               key: btnKey,
               onTapUp: (TapUpDetails details) {
-                onShow(
-                    height: _height,
-                    width: _width,
-                    offset: details.globalPosition);
+                // onShow(
+                //     height: _height,
+                //     width: _width,
+                //     offset: details.globalPosition);
               },
               child: CircleAvatar(
                 radius: _height * 0.034,

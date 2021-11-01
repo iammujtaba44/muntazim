@@ -1,4 +1,5 @@
 import 'package:muntazim/core/plugins.dart';
+import 'package:muntazim/core/services/public_service.dart';
 
 import 'package:provider/single_child_widget.dart';
 
@@ -9,7 +10,7 @@ List<SingleChildWidget> providers = [
   ChangeNotifierProvider<AccountProvider>(create: (_) => AccountProvider()),
   ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
   Provider(create: (_) => DrawerService()),
-
+  ChangeNotifierProvider<PublicService>(create: (_) => PublicService()),
 ];
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
