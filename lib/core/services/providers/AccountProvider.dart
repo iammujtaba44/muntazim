@@ -67,7 +67,7 @@ class AccountProvider with ChangeNotifier {
   }
 
   SchoolModel getSchool(DocumentSnapshot qs) {
-    // print(qs.data());
+    //print("Get Schools -> ${qs.data()}");
     try {
       SchoolModel school = schoolModelFromJson(jsonEncode(qs.data()));
       return school;
@@ -94,7 +94,7 @@ class AccountProvider with ChangeNotifier {
   }
 
   StudentModel getStudent(DocumentSnapshot qs) {
-    //   print(qs.data());
+    //  print("Get Student --> ${qs.data()}");
     // if (this.parents.students.length == this.students.length) {
     //   this.students.clear();
     // }
@@ -347,20 +347,24 @@ class AccountProvider with ChangeNotifier {
     print('$schoolId1    $programId1     $sessionId1');
     this.subjectList.clear();
     this.subjectsIcons.clear();
-    print(
-        '----${this.schools[schoolId1].schoolYears[sessionId1].programs[programId1].subjects}');
-    this.studentSubjects = this
-                .schools[schoolId1]
-                .schoolYears[sessionId1]
-                .programs[programId1]
-                .subjects ==
-            null
-        ? Map()
-        : this
-            .schools[schoolId1]
-            .schoolYears[sessionId1]
-            .programs[programId1]
-            .subjects;
+    // print(
+    //     '----${this.schools[schoolId1].schoolYears[sessionId1].programs[programId1].subjects}');
+
+    if (this.schools[schoolId1].schoolYears[sessionId1].programs[programId1] !=
+        null) {
+      this.studentSubjects = this
+                  .schools[schoolId1]
+                  .schoolYears[sessionId1]
+                  .programs[programId1]
+                  .subjects ==
+              null
+          ? Map()
+          : this
+              .schools[schoolId1]
+              .schoolYears[sessionId1]
+              .programs[programId1]
+              .subjects;
+    }
 
     print("*********GET SUBJECTS METHOD");
     print("*********(${this.studentSubjects})");

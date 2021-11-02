@@ -226,46 +226,71 @@ class _TranscriptScreenState extends State<TranscriptScreen> {
                         ],
                       ),
                     ),
-                    ListView.builder(
-                        shrinkWrap: true,
-                        physics: BouncingScrollPhysics(),
-                        controller: controller,
-                        itemCount: parent.studentSubjects.length,
-                        itemBuilder: (context, index) {
-                          double scale = 1.0;
-                          if (topContainer > 0.5) {
-                            scale = index + 0.5 - topContainer;
-                            if (scale < 0) {
-                              scale = 0;
-                            } else if (scale > 1) {
-                              scale = 1;
-                            }
-                          }
-                          // dynamic subjectPercentage;
-                          // parent.reportCardStream(
-                          //     subjectId: parent.studentSubjects.keys
-                          //         .elementAt(index), docId: '${sessionId}_$programId').listen((event) {
-                          //   print("${event.subjectPercentage}");
-                          //  subjectPercentage = event.subjectPercentage;
-                          // }).;
-                          return Opacity(
-                            opacity: scale,
-                            child: Transform(
-                              transform: Matrix4.identity()
-                                ..scale(scale, scale),
-                              alignment: Alignment.topCenter,
-                              child: getTileCard(_height,
-                                  parent: parent,
-                                  subjectId: parent.studentSubjects.keys
-                                      .elementAt(index),
-                                  subjectName:
-                                      '${parent.studentSubjects.values.elementAt(index)}',
-                                  totalMarks: '10',
-                                  reportCardDocId: '${sessionId}_$programId',
-                                  index: index),
+                    parent.studentSubjects.length > 0
+                        ? ListView.builder(
+                            shrinkWrap: true,
+                            physics: BouncingScrollPhysics(),
+                            controller: controller,
+                            itemCount: parent.studentSubjects.length,
+                            itemBuilder: (context, index) {
+                              double scale = 1.0;
+                              if (topContainer > 0.5) {
+                                scale = index + 0.5 - topContainer;
+                                if (scale < 0) {
+                                  scale = 0;
+                                } else if (scale > 1) {
+                                  scale = 1;
+                                }
+                              }
+                              // dynamic subjectPercentage;
+                              // parent.reportCardStream(
+                              //     subjectId: parent.studentSubjects.keys
+                              //         .elementAt(index), docId: '${sessionId}_$programId').listen((event) {
+                              //   print("${event.subjectPercentage}");
+                              //  subjectPercentage = event.subjectPercentage;
+                              // }).;
+                              return Opacity(
+                                opacity: scale,
+                                child: Transform(
+                                  transform: Matrix4.identity()
+                                    ..scale(scale, scale),
+                                  alignment: Alignment.topCenter,
+                                  child: getTileCard(_height,
+                                      parent: parent,
+                                      subjectId: parent.studentSubjects.keys
+                                          .elementAt(index),
+                                      subjectName:
+                                          '${parent.studentSubjects.values.elementAt(index)}',
+                                      totalMarks: '10',
+                                      reportCardDocId:
+                                          '${sessionId}_$programId',
+                                      index: index),
+                                ),
+                              );
+                            })
+                        : Container(
+                            alignment: Alignment.center,
+                            margin:
+                                EdgeInsets.fromLTRB(25, _height * 0.08, 25, 0),
+                            padding:
+                                EdgeInsets.only(left: 15, right: 15, top: 5),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Helper.text(
+                                    value: "This Student has not been enrolled",
+                                    fColor: CustomColors.darkBackgroundColor,
+                                    fSize: _height * 0.02,
+                                    fWeight: FontWeight.w400),
+                                Helper.text(
+                                    value: "In any subject.",
+                                    fColor: CustomColors.darkBackgroundColor,
+                                    fSize: _height * 0.02,
+                                    fWeight: FontWeight.w400)
+                              ],
                             ),
-                          );
-                        })
+                          )
                   ],
                 ),
 

@@ -51,8 +51,8 @@ class StudentModel {
         medicalNeeds: json["medical_needs"],
         photo: json["photo"],
         previousSchool: json["previous_school"],
-        schools: Map.from(json["schools"])
-            .map((k, v) => MapEntry<String, School>(k, School.fromJson(v))),
+        schools: Map.from(json["schools"]).map((k, v) =>
+            MapEntry<String, School>(k, v.isEmpty ? null : School.fromJson(v))),
         status: json["status"],
         studentId: json["student_id"],
       );
@@ -101,7 +101,8 @@ class School {
         schoolYears: json["school_years"] == null
             ? null
             : Map.from(json["school_years"]).map((k, v) =>
-                MapEntry<String, SchoolYear>(k, SchoolYear.fromJson(v))),
+                MapEntry<String, SchoolYear>(
+                    k, v.isEmpty ? null : SchoolYear.fromJson(v))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -119,13 +120,13 @@ class SchoolYear {
   dynamic attendancePercentage;
 
   factory SchoolYear.fromJson(Map<String, dynamic> json) {
-    // print("--++_--+${json['attendance_percentage']}");
+    // print("--++_--+${json["programs"]}");
     return SchoolYear(
       attendancePercentage: json['attendance_percentage'],
-      programs: json["programs"] == null
-          ? null
-          : Map.from(json["programs"])
-              .map((k, v) => MapEntry<String, Program>(k, Program.fromJson(v))),
+      programs: json["programs"] == null || json["programs"].isEmpty
+          ? Map()
+          : Map.from(json["programs"]).map((k, v) => MapEntry<String, Program>(
+              k, v.isEmpty ? null : Program.fromJson(v))),
     );
   }
 
@@ -144,12 +145,16 @@ class Program {
 
   Map<String, String> subjects;
 
-  factory Program.fromJson(Map<String, dynamic> json) => Program(
-        subjects: json["subjects"] == null
-            ? null
-            : Map.from(json["subjects"])
-                .map((k, v) => MapEntry<String, String>(k, v)),
-      );
+  factory Program.fromJson(Map<String, dynamic> json) {
+    print("subjects --++${json["subjects"]}");
+
+    return Program(
+      subjects: json["subjects"] == null || json["subjects"].isEmpty
+          ? null
+          : Map.from(json["subjects"])
+              .map((k, v) => MapEntry<String, String>(k, v)),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         "subjects": subjects == null
